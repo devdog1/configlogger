@@ -1,31 +1,82 @@
 from django.db import models
-import yaml
 
 class OxidizedSetting(models.Model):
-    """Stores the main oxidized configuration in PostgreSQL."""
+    """Stores the main oxidized configuration in PostgreSQL with structured parameters."""
     key = models.CharField(max_length=64, unique=True, default='main')
-    config_yaml = models.TextField(
-        help_text="Full Oxidized YAML configuration file contents.",
-        default="""---
-username: username
-password: password
-model: ios
-resolve_dns: true
-interval: 3600
-use_max_threads: false
-threads: 30
-timeout: 20
-retries: 3
-output:
-  default: git
-  git:
-    user: Oxidized
-    email: o@example.com
-    repo: ~/.config/oxidized/oxidized.git
-source:
-  default: django
-"""
+
+    # General & Authentication
+    username = models.CharField(max_length=128, default='username', blank=True, help_text="Default username for devices")
+    password = models.CharField(max_length=128, default='password', blank=True, help_text="Default password for devices")
+    model = models.CharField(max_length=64, default='ios', help_text="Default model type (e.g. ios, junos, eos)")
+    resolve_dns = models.BooleanField(default=True, help_text="Resolve DNS to IP address")
+    interval = models.IntegerField(default=43200, help_text="How often configs are gathered in seconds (e.g. 43200 = 12h)")
+    log = models.CharField(max_length=255, default='~/.config/oxidized/logs/oxidized.log', blank=True, help_text="Log file location")
+    use_syslog = models.BooleanField(default=False, help_text="Send log output to syslog")
+    debug = models.BooleanField(default=False, help_text="Enable verbose debug logging")
+    threads = models.IntegerField(default=30, help_text="Worker threads count (e.g. 30 or 200)")
+    use_max_threads = models.BooleanField(default=False, help_text="Always use max threads")
+    timeout = models.IntegerField(default=20, help_text="Device connection/execution timeout in seconds")
+    retries = models.IntegerField(default=3, help_text="Number of retries upon failure")
+    prompt = models.CharField(max_length=255, default=r'^([\w.@-]+[#>]\s?)$', help_text="Regex for device prompt")
+    rest = models.CharField(max_length=64, default='0.0.0.0:8888', blank=True, help_text="REST API listen address")
+    next_adds_job = models.BooleanField(default=True, help_text="Move next item immediately to top of queue ahead of other items")
+    pid = models.CharField(max_length=255, default='~/.config/oxidized/pid', blank=True, help_text="PID file path")
+
+    # Crash & Stats
+    crash_directory = models.CharField(max_length=255, default='~/.config/oxidized/crashes', blank=True)
+    crash_hostnames = models.BooleanField(default=False)
+    stats_history_size = models.IntegerField(default=10, help_text="Number of recent job runs to retain in stats history")
+
+    # Input Settings
+    input_default = models.CharField(max_length=64, default='ssh', help_text="Default input mechanism (e.g. ssh, telnet)")
+    input_debug = models.BooleanField(default=False, help_text="Debug input sessions")
+    input_ssh_secure = models.BooleanField(default=False, help_text="Enforce strict SSH host key checking")
+    input_ftp_passive = models.BooleanField(default=True)
+    input_utf8_encoded = models.BooleanField(default=True)
+
+    # Output Settings
+    output_default = models.CharField(max_length=64, default='git', help_text="Default output mechanism (file, git)")
+    output_file_directory = models.CharField(max_length=255, default='~/.config/oxidized/configs', blank=True)
+    output_git_user = models.CharField(max_length=128, default='Oxidized', blank=True)
+    output_git_email = models.CharField(max_length=128, default='o@example.com', blank=True)
+    output_git_repo = models.CharField(max_length=255, default='~/.config/oxidized/oxidized.git', blank=True)
+    output_git_single_repo = models.BooleanField(default=True)
+
+    # Source Settings
+    source_default = models.CharField(max_length=64, default='django', help_text="Default source (django, csv)")
+    source_csv_file = models.CharField(max_length=255, default='~/.config/oxidized/router.db', blank=True)
+    source_csv_delimiter = models.CharField(max_length=16, default=':', blank=True)
+    source_csv_map = models.JSONField(default=dict, blank=True, help_text='CSV field mapping, e.g. {"name": 0, "model": 1, "group": 2}')
+    source_csv_vars_map = models.JSONField(default=dict, blank=True, help_text='CSV vars mapping, e.g. {"ssh_kex": 3, "remove_secret": 4}')
+    source_csv_gpg = models.BooleanField(default=False)
+
+    # Global Vars, Model Map, Model Overrides, Groups, Hooks
+    extra_vars = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text='Global vars, e.g. {"auth_methods": ["password", "keyboard-interactive"], "remove_secret": false}'
     )
+    model_map = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text='Maps friendly aliases to model names, e.g. {"cisco": "ios", "juniper": "junos"}'
+    )
+    model_overrides = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text='Model-level credentials or config overrides, e.g. {"routeros": {"username": "user", "password": "pass"}}'
+    )
+    group_overrides = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text='Group configurations, e.g. {"core": {}, "switches": {}}'
+    )
+    hooks = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text='Configured hooks, e.g. {"push_to_remote": {"type": "githubrepo", "events": ["post_store"]}, "email_output": {"type": "exec"}}'
+    )
+
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -33,12 +84,88 @@ source:
         verbose_name_plural = "Oxidized Configuration"
 
     def __str__(self):
-        return f"Oxidized Config ({self.key})"
+        return f"Oxidized Configuration ({self.key})"
+
+    def to_dict(self):
+        """Convert the structured settings into Oxidized configuration dictionary."""
+        return {
+            'username': self.username,
+            'password': self.password,
+            'model': self.model,
+            'resolve_dns': self.resolve_dns,
+            'interval': self.interval,
+            'log': self.log,
+            'use_syslog': self.use_syslog,
+            'debug': self.debug,
+            'threads': self.threads,
+            'use_max_threads': self.use_max_threads,
+            'timeout': self.timeout,
+            'retries': self.retries,
+            'prompt': self.prompt,
+            'rest': self.rest,
+            'next_adds_job': self.next_adds_job,
+            'pid': self.pid,
+            'crash': {
+                'directory': self.crash_directory,
+                'hostnames': self.crash_hostnames,
+            },
+            'stats': {
+                'history_size': self.stats_history_size,
+            },
+            'input': {
+                'default': self.input_default,
+                'debug': self.input_debug,
+                'ssh': {
+                    'secure': self.input_ssh_secure,
+                },
+                'ftp': {
+                    'passive': self.input_ftp_passive,
+                },
+                'utf8_encoded': self.input_utf8_encoded,
+            },
+            'output': {
+                'default': self.output_default,
+                'file': {
+                    'directory': self.output_file_directory,
+                },
+                'git': {
+                    'user': self.output_git_user,
+                    'email': self.output_git_email,
+                    'repo': self.output_git_repo,
+                    'single_repo': self.output_git_single_repo,
+                },
+            },
+            'source': {
+                'default': self.source_default,
+                'csv': {
+                    'file': self.source_csv_file,
+                    'delimiter': self.source_csv_delimiter,
+                    'map': self.source_csv_map or {'name': 0, 'model': 1, 'group': 2},
+                    'vars_map': self.source_csv_vars_map or {},
+                    'gpg': self.source_csv_gpg,
+                },
+                'django': {
+                    'app': 'oxidized_web',
+                },
+            },
+            'vars': self.extra_vars or {},
+            'model_map': self.model_map or {
+                'CableOS': 'CableOS',
+                'juniper': 'junos',
+                'cisco': 'ios',
+                'mikrotik': 'routeros',
+                'fortigate': 'fortios',
+                'arista': 'eos',
+            },
+            'models': self.model_overrides or {},
+            'groups': self.group_overrides or {},
+            'hooks': self.hooks or {},
+        }
 
     @classmethod
-    def get_config_yaml(cls):
+    def get_config_dict(cls):
         setting = cls.objects.first()
-        return setting.config_yaml if setting else None
+        return setting.to_dict() if setting else None
 
 
 class RouterDbEntry(models.Model):
@@ -86,3 +213,36 @@ class Device(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.model})"
+
+
+class CustomModel(models.Model):
+    """Custom Node Model defined via Django Admin."""
+    name = models.CharField(max_length=64, unique=True, help_text="Model identifier, e.g. 'routeros', 'fortios', 'vyos'")
+    description = models.CharField(max_length=255, blank=True, help_text="Short description of OS/Platform")
+    prompt_regex = models.CharField(max_length=255, default=r'^([\w.@-]+[#>]\s?)$', help_text="Device prompt regex pattern")
+    comment_prefix = models.CharField(max_length=16, default="! ", help_text="Comment prefix, e.g. '! ' or '# '")
+    commands = models.JSONField(
+        default=list,
+        blank=True,
+        help_text='List of commands to execute, e.g. ["show version", "show running-config"] or [{"cmd": "export", "input": "ssh"}]'
+    )
+    clean_filters = models.JSONField(
+        default=list,
+        blank=True,
+        help_text='List of regex replace pairs to sanitize output, e.g. [["password \\\\S+", "password <secret hidden>"]]'
+    )
+    code_snippet = models.TextField(
+        blank=True,
+        help_text="Optional custom Python code executing within Model context to customize logic"
+    )
+    enabled = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Custom Node Model"
+        verbose_name_plural = "Custom Node Models"
+        ordering = ['name']
+
+    def __str__(self):
+        return f"Model: {self.name}"

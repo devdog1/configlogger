@@ -22,7 +22,7 @@
 
 <div class="row">
   <div class="table-responsive">
-    <table class="table table-sm table-striped table-hover" id="nodesTable">
+    <table class="table table-sm table-striped table-hover align-middle" id="nodesTable">
       <thead>
         <tr>
           <th>Name</th>
@@ -30,6 +30,8 @@
           <th>Model</th>
           <th>Group</th>
           <th>Last Status</th>
+          <th>Attempts</th>
+          <th>Last Error / Reason</th>
           <th>Last Update</th>
           <th>Last Changed</th>
           <th>Actions</th>
@@ -38,28 +40,49 @@
       <tbody>
         {% for node in nodes %}
         <tr>
-          <td><a href="/node/show/{{ node.name }}">{{ node.name }}</a></td>
+          <td><strong><a href="/node/show/{{ node.name }}">{{ node.name }}</a></strong></td>
           <td>{{ node.ip }}</td>
-          <td><a href="/nodes/model/{{ node.model }}">{{ node.model }}</a></td>
-          <td><a href="/nodes/group/{{ node.group }}">{{ node.group }}</a></td>
+          <td><a href="/nodes/model/{{ node.model }}" class="badge text-bg-secondary text-decoration-none">{{ node.model }}</a></td>
+          <td><a href="/nodes/group/{{ node.group }}" class="badge text-bg-info text-decoration-none">{{ node.group }}</a></td>
           <td>
-            <div title="{{ node.status }}" class="{{ node.status }}"></div>
-            <span class="d-none">{{ node.status }}</span>
+            {% if node.status == "success" %}
+              <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>success</span>
+            {% elif node.status == "fail" or node.status == "no_connection" %}
+              <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>{{ node.status }}</span>
+            {% else %}
+              <span class="badge bg-secondary"><i class="bi bi-dash-circle me-1"></i>never</span>
+            {% endif %}
           </td>
-          <td>{{ node.time }}</td>
-          <td>{{ node.mtime }}</td>
           <td>
-            <a class="link-body-emphasis" title="Fetch Configuration" href="/node/fetch/{{ node.name }}">
-              <i class="bi bi-cloud-download"></i>
-            </a>
-            &nbsp;
-            <a class="link-body-emphasis" title="Versions" href="/node/version?node_full={{ node.name }}">
-              <i class="bi bi-stack"></i>
-            </a>
-            &nbsp;
-            <a class="link-body-emphasis" title="Queue immediately" href="/node/next/{{ node.name }}">
-              <i class="bi bi-repeat"></i>
-            </a>
+            {% if node.attempts %}
+              <span class="badge rounded-pill bg-light text-dark border">{{ node.attempts }}</span>
+            {% else %}
+              <span class="text-muted">-</span>
+            {% endif %}
+          </td>
+          <td style="max-width: 250px;">
+            {% if node.last_error %}
+              <span class="text-danger small" title="{{ node.last_error }}">
+                <i class="bi bi-exclamation-triangle-fill me-1"></i>{{ node.last_error|truncatechars:40 }}
+              </span>
+            {% else %}
+              <span class="text-muted small">None</span>
+            {% endif %}
+          </td>
+          <td><small class="text-muted">{{ node.time }}</small></td>
+          <td><small class="text-muted">{{ node.mtime }}</small></td>
+          <td>
+            <div class="btn-group btn-group-sm" role="group">
+              <a class="btn btn-outline-primary" title="Fetch Configuration" href="/node/fetch/{{ node.name }}">
+                <i class="bi bi-cloud-download"></i>
+              </a>
+              <a class="btn btn-outline-secondary" title="Revisions & Diffs" href="/node/version?node_full={{ node.name }}">
+                <i class="bi bi-clock-history"></i>
+              </a>
+              <a class="btn btn-outline-success" title="Backup Now" href="/node/next/{{ node.name }}">
+                <i class="bi bi-play-fill"></i>
+              </a>
+            </div>
           </td>
         </tr>
         {% endfor %}

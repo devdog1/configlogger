@@ -13,12 +13,13 @@ class NodeStats:
     def __init__(self):
         self.history = []
 
-    def add(self, job):
+    def add(self, start, end, status, error=None):
         self.history.append({
-            'start': job.start,
-            'end': job.end,
-            'time': (job.end - job.start).total_seconds() if job.end and job.start else 0,
-            'status': job.status
+            'start': start,
+            'end': end,
+            'time': round((end - start).total_seconds(), 2) if end and start else 0,
+            'status': status,
+            'error': error
         })
         if len(self.history) > 10:
             self.history.pop(0)
@@ -51,10 +52,12 @@ class Node:
         self.output = resolve_output(output_type, cfg=getattr(Config.current().output, output_type, {}))
 
         self.timeout = int(opt.get('timeout') or Config.current().timeout or 20)
+        self.retries = int(opt.get('retries') or Config.current().retries or 3)
         self.stats = NodeStats()
         self.running = False
         self.last = None
-        self.retry = 0
+        self.attempts = 0
+        self.last_error = None
         self.nexted = False
         self.last_modified = None
 
@@ -76,39 +79,55 @@ class Node:
     def run(self):
         self.running = True
         status = 'fail'
-        config_outputs = None
+        start_time = datetime.datetime.now()
+        error_msg = None
+        max_attempts = max(1, self.retries)
 
-        try:
-            connected = self.input.connect(self)
-            if connected:
-                self.model.input = self.input
-                config_outputs = self.model.get()
-                if config_outputs:
-                    status = 'success'
-                    self.output.store(self.name, config_outputs, opt={'group': self.group})
+        for attempt in range(1, max_attempts + 1):
+            self.attempts = attempt
+            try:
+                connected = self.input.connect(self)
+                if connected:
+                    self.model.input = self.input
+                    config_outputs = self.model.get()
+                    if config_outputs:
+                        status = 'success'
+                        self.last_error = None
+                        self.output.store(self.name, config_outputs, opt={'group': self.group})
+                        break
+                    else:
+                        status = 'no_connection'
+                        error_msg = f"Attempt {attempt}/{max_attempts}: Commands produced no output"
                 else:
                     status = 'no_connection'
-            else:
-                status = 'no_connection'
-        except Exception as e:
-            logger.exception("Error backing up node %s: %s", self.name, e)
-            status = 'fail'
-        finally:
-            try:
-                self.input.disconnect()
-            except Exception:
-                pass
-            self.running = False
+                    error_msg = f"Attempt {attempt}/{max_attempts}: Connection refused or timed out"
+            except Exception as e:
+                logger.exception("Error backing up node %s: %s", self.name, e)
+                status = 'fail'
+                error_msg = f"Attempt {attempt}/{max_attempts}: {str(e)}"
+            finally:
+                try:
+                    self.input.disconnect()
+                except Exception:
+                    pass
 
-        now = datetime.datetime.now()
+        self.running = False
+        end_time = datetime.datetime.now()
+
+        if status != 'success':
+            self.last_error = error_msg or f"Failed after {self.attempts} attempts"
+
         self.last = {
-            'start': now,
-            'end': now,
+            'start': start_time,
+            'end': end_time,
             'status': status,
-            'time': 0.1
+            'time': round((end_time - start_time).total_seconds(), 2),
+            'error': self.last_error
         }
+        self.stats.add(start_time, end_time, status, error=self.last_error)
+
         if status == 'success':
-            self.last_modified = now.isoformat()
+            self.last_modified = end_time.strftime("%Y-%m-%d %H:%M:%S")
         return status == 'success'
 
     def to_dict(self):
@@ -121,4 +140,7 @@ class Node:
             'time': self.last['end'].strftime("%Y-%m-%d %H:%M:%S") if self.last and self.last.get('end') else 'never',
             'last': self.last,
             'mtime': self.last_modified or 'never',
+            'attempts': self.attempts,
+            'last_error': self.last_error,
+            'history': self.stats.history,
         }

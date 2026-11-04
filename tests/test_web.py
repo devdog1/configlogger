@@ -1,7 +1,10 @@
 import pytest
 from django.test import Client
 from django.contrib.auth.models import User
-from oxidized_web.models import OxidizedSetting, RouterDbEntry, Device
+from oxidized_web.models import OxidizedSetting, RouterDbEntry, Device, CustomModel
+from oxidized.output import GitOutput
+import tempfile
+import shutil
 
 @pytest.mark.django_db
 def test_django_admin_access():
@@ -24,6 +27,10 @@ def test_django_admin_access():
 
     # Device admin list
     resp = client.get('/admin/oxidized_web/device/')
+    assert resp.status_code == 200
+
+    # CustomModel admin list
+    resp = client.get('/admin/oxidized_web/custommodel/')
     assert resp.status_code == 200
 
 @pytest.mark.django_db
@@ -93,3 +100,39 @@ def test_oxidized_web_views_and_api():
     stats = resp.json()
     assert 'total_nodes' in stats
     assert stats['total_nodes'] >= 1
+
+@pytest.mark.django_db
+def test_revision_control_and_git_diff_view():
+    tmp_git = tempfile.mkdtemp()
+    try:
+        git_out = GitOutput({'repo': tmp_git, 'user': 'Tester', 'email': 't@example.com'})
+        git_out.store('core-switch', "hostname core-switch\ninterface GigabitEthernet0/1\n  shutdown\n")
+        git_out.store('core-switch', "hostname core-switch\ninterface GigabitEthernet0/1\n  no shutdown\n")
+
+        Device.objects.filter(name='core-switch').delete()
+        dev = Device.objects.create(
+            name='core-switch',
+            ip='10.0.0.10',
+            model='ios',
+            group='core',
+            output_type='git'
+        )
+
+        client = Client()
+
+        # Check /node/version
+        resp = client.get('/node/version?node_full=core-switch')
+        assert resp.status_code == 200
+        assert b'core-switch' in resp.content
+
+        # Check /node/version.json
+        resp_json = client.get('/node/version.json?node_full=core-switch')
+        assert resp_json.status_code == 200
+        versions = resp_json.json().get('versions', [])
+
+        # Check /node/version/diffs git-style view
+        resp_diff = client.get(f'/node/version/diffs?node_full=core-switch')
+        assert resp_diff.status_code == 200
+        assert b'Diff Comparison' in resp_diff.content
+    finally:
+        shutil.rmtree(tmp_git, ignore_errors=True)

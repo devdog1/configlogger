@@ -3,23 +3,111 @@
 {% block content %}
 <div class="row">
   <div class="col-12">
-    <h4>Node: {{ node.name }}</h4>
-    <hr>
-    <div class="card mb-3">
-      <div class="card-body">
-        <h5 class="card-title">Node details</h5>
-        <ul>
-          <li><strong>IP:</strong> {{ node.ip }}</li>
-          <li><strong>Model:</strong> {{ node.model_name }}</li>
-          <li><strong>Group:</strong> {{ node.group }}</li>
-          <li><strong>Input:</strong> {{ node.input_class.name }}</li>
-          <li><strong>Last Status:</strong> {{ node.last.status|default:"never" }}</li>
-        </ul>
-        <a class="btn btn-primary" href="/node/fetch/{{ node.name }}">View Config</a>
-        <a class="btn btn-secondary" href="/node/version?node_full={{ node.name }}">Versions</a>
-        <a class="btn btn-warning" href="/node/next/{{ node.name }}">Backup Now</a>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h4>Node: {{ node.name }}</h4>
+      <div>
+        <a class="btn btn-outline-secondary" href="/nodes"><i class="bi bi-arrow-left"></i> Back to Nodes</a>
+        <a class="btn btn-primary" href="/node/fetch/{{ node.name }}"><i class="bi bi-cloud-download"></i> View Config</a>
+        <a class="btn btn-info text-white" href="/node/version?node_full={{ node.name }}"><i class="bi bi-clock-history"></i> Revision History</a>
+        <a class="btn btn-success" href="/node/next/{{ node.name }}"><i class="bi bi-play-fill"></i> Backup Now</a>
       </div>
     </div>
+    <hr>
+
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <div class="card h-100 shadow-sm">
+          <div class="card-header bg-body-tertiary">
+            <h5 class="card-title mb-0">Node Configuration</h5>
+          </div>
+          <div class="card-body">
+            <table class="table table-borderless table-sm mb-0">
+              <tr><th style="width: 35%;">IP / Hostname:</th><td>{{ node.ip }}</td></tr>
+              <tr><th>Model:</th><td><span class="badge text-bg-secondary">{{ node.model_name }}</span></td></tr>
+              <tr><th>Group:</th><td><span class="badge text-bg-info">{{ node.group }}</span></td></tr>
+              <tr><th>Input Driver:</th><td>{{ node.input_class.name }}</td></tr>
+              <tr><th>Output Destination:</th><td>{{ node.output.cfg.directory|default:node.output.cfg.repo|default:"Default" }}</td></tr>
+              <tr><th>Timeout / Retries:</th><td>{{ node.timeout }}s / {{ node.retries }} retries</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <div class="card h-100 shadow-sm">
+          <div class="card-header bg-body-tertiary">
+            <h5 class="card-title mb-0">Execution & Status</h5>
+          </div>
+          <div class="card-body">
+            <table class="table table-borderless table-sm mb-0">
+              <tr>
+                <th style="width: 35%;">Last Status:</th>
+                <td>
+                  {% if node.last.status == "success" %}
+                    <span class="badge bg-success">Success</span>
+                  {% elif node.last.status %}
+                    <span class="badge bg-danger">{{ node.last.status }}</span>
+                  {% else %}
+                    <span class="badge bg-secondary">Never Run</span>
+                  {% endif %}
+                </td>
+              </tr>
+              <tr><th>Connection Attempts:</th><td><strong>{{ node.attempts|default:"0" }}</strong></td></tr>
+              <tr><th>Execution Duration:</th><td>{{ node.last.time|default:"0" }}s</td></tr>
+              <tr><th>Last Run Timestamp:</th><td>{{ node.last.end|default:"Never" }}</td></tr>
+              <tr>
+                <th>Error / Failure Reason:</th>
+                <td>
+                  {% if node.last_error %}
+                    <div class="alert alert-danger py-1 px-2 mb-0 small">
+                      <i class="bi bi-exclamation-triangle-fill me-1"></i>{{ node.last_error }}
+                    </div>
+                  {% else %}
+                    <span class="text-success small"><i class="bi bi-check-circle me-1"></i>None (Healthy)</span>
+                  {% endif %}
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Execution History -->
+    {% if node.stats.history %}
+    <div class="card mt-3 shadow-sm">
+      <div class="card-header bg-body-tertiary">
+        <h5 class="card-title mb-0"><i class="bi bi-journal-text me-2"></i>Recent Execution History</h5>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-striped table-sm mb-0">
+          <thead>
+            <tr>
+              <th>Start Time</th>
+              <th>End Time</th>
+              <th>Duration</th>
+              <th>Status</th>
+              <th>Error Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for h in node.stats.history %}
+            <tr>
+              <td>{{ h.start }}</td>
+              <td>{{ h.end }}</td>
+              <td>{{ h.time }}s</td>
+              <td>
+                <span class="badge {% if h.status == 'success' %}bg-success{% else %}bg-danger{% endif %}">{{ h.status }}</span>
+              </td>
+              <td><small class="text-danger">{{ h.error|default:"-" }}</small></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+
   </div>
 </div>
 {% endblock %}

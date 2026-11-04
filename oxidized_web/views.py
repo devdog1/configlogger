@@ -167,4 +167,28 @@ def node_version_diffs(request):
 
     if request.path.endswith('.json') or request.GET.get('format') == 'json':
         return JsonResponse({'node': node_name, 'diff': diff})
-    return HttpResponse(diff, content_type="text/plain; charset=utf-8")
+
+    # Parse unified diff into structured lines for git-style visual rendering
+    diff_lines = []
+    line_num = 1
+    for raw_line in diff.splitlines():
+        if raw_line.startswith('+++') or raw_line.startswith('---'):
+            diff_lines.append({'type': 'meta', 'text': raw_line, 'line_num': ''})
+        elif raw_line.startswith('@@'):
+            diff_lines.append({'type': 'header', 'text': raw_line, 'line_num': '...'})
+        elif raw_line.startswith('+'):
+            diff_lines.append({'type': 'add', 'text': raw_line[1:], 'line_num': line_num})
+            line_num += 1
+        elif raw_line.startswith('-'):
+            diff_lines.append({'type': 'del', 'text': raw_line[1:], 'line_num': ''})
+        else:
+            diff_lines.append({'type': 'context', 'text': raw_line[1:] if raw_line.startswith(' ') else raw_line, 'line_num': line_num})
+            line_num += 1
+
+    return render(request, 'oxidized_web/diffs.html', {
+        'node_name': node_name,
+        'oid1': oid1,
+        'oid2': oid2,
+        'diff': diff,
+        'diff_lines': diff_lines,
+    })

@@ -107,7 +107,8 @@ class Config:
                 'git': {
                     'user': 'Oxidized',
                     'email': 'o@example.com',
-                    'repo': os.path.join(cls.ROOT, 'oxidized.git')
+                    'repo': os.path.join(cls.ROOT, 'oxidized.git'),
+                    'single_repo': True
                 }
             },
             'source': {
@@ -146,12 +147,10 @@ class Config:
             if os.environ.get('DJANGO_SETTINGS_MODULE'):
                 django.setup()
                 from oxidized_web.models import OxidizedSetting
-                db_cfg_str = OxidizedSetting.get_config_yaml()
-                if db_cfg_str:
-                    db_cfg = yaml.safe_load(db_cfg_str)
-                    if isinstance(db_cfg, dict):
-                        cls._deep_merge(cfg, db_cfg)
-                        loaded_from_db = True
+                db_cfg = OxidizedSetting.get_config_dict()
+                if db_cfg and isinstance(db_cfg, dict):
+                    cls._deep_merge(cfg, db_cfg)
+                    loaded_from_db = True
         except Exception:
             pass
 

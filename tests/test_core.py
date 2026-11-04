@@ -6,7 +6,7 @@ from oxidized.model import resolve_model
 from oxidized.model.models import IOS, JunOS, EOS
 from oxidized.input import MockInput
 from oxidized.output import FileOutput, GitOutput
-from oxidized_web.models import OxidizedSetting, RouterDbEntry, Device
+from oxidized_web.models import OxidizedSetting, RouterDbEntry, Device, CustomModel
 import tempfile
 import shutil
 
@@ -23,16 +23,26 @@ def test_oxidized_setting_postgres_load():
     OxidizedSetting.objects.all().delete()
     OxidizedSetting.objects.create(
         key='main',
-        config_yaml="""
-threads: 42
-username: testuser
-password: secretpassword
-"""
+        threads=200,
+        username='adminuser',
+        password='secretpassword',
+        interval=43200,
+        timeout=300,
+        retries=1,
+        debug=True,
+        use_syslog=True,
+        model_overrides={'routeros': {'username': 'ros_user', 'password': 'ros_password'}}
     )
     cfg = Config.load()
-    assert cfg.threads == 42
-    assert cfg.username == 'testuser'
+    assert cfg.threads == 200
+    assert cfg.username == 'adminuser'
     assert cfg.password == 'secretpassword'
+    assert cfg.interval == 43200
+    assert cfg.timeout == 300
+    assert cfg.retries == 1
+    assert cfg.debug is True
+    assert cfg.use_syslog is True
+    assert cfg.models['routeros']['username'] == 'ros_user'
 
 @pytest.mark.django_db
 def test_router_db_and_device_sources():
@@ -60,6 +70,35 @@ def test_router_db_and_device_sources():
     assert sw_node.ip == '192.168.1.1'
     assert sw_node.model_name == 'eos'
     assert sw_node.group == 'switches'
+
+@pytest.mark.django_db
+def test_custom_model_from_database():
+    CustomModel.objects.filter(name='vyos').delete()
+    cm = CustomModel.objects.create(
+        name='vyos',
+        description='VyOS Router platform',
+        prompt_regex=r'^[\w.-]+@[\w.-]+:.*[#$]\s?$',
+        comment_prefix='# ',
+        commands=['show version', 'show configuration commands'],
+        clean_filters=[[r'password \S+', 'password <secret hidden>']]
+    )
+
+    resolved_cls = resolve_model('vyos')
+    assert resolved_cls is not None
+    assert resolved_cls._comment == '# '
+
+    # Test executing node with custom model
+    node = Node({
+        'name': 'vyos-gw',
+        'ip': '192.168.10.1',
+        'model': 'vyos',
+        'input': 'mock',
+        'output': 'file',
+        'vars': {'remove_secret': True}
+    })
+    success = node.run()
+    assert success is True
+    assert node.last['status'] == 'success'
 
 @pytest.mark.django_db
 def test_model_execution_and_output():
