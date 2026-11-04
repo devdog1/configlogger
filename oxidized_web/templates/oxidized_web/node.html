@@ -1,0 +1,25 @@
+{% extends "oxidized_web/base.html" %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <h4>Node: {{ node.name }}</h4>
+    <hr>
+    <div class="card mb-3">
+      <div class="card-body">
+        <h5 class="card-title">Node details</h5>
+        <ul>
+          <li><strong>IP:</strong> {{ node.ip }}</li>
+          <li><strong>Model:</strong> {{ node.model_name }}</li>
+          <li><strong>Group:</strong> {{ node.group }}</li>
+          <li><strong>Input:</strong> {{ node.input_class.name }}</li>
+          <li><strong>Last Status:</strong> {{ node.last.status|default:"never" }}</li>
+        </ul>
+        <a class="btn btn-primary" href="/node/fetch/{{ node.name }}">View Config</a>
+        <a class="btn btn-secondary" href="/node/version?node_full={{ node.name }}">Versions</a>
+        <a class="btn btn-warning" href="/node/next/{{ node.name }}">Backup Now</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

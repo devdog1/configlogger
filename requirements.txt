@@ -1,0 +1,8 @@
+django>=5.0
+psycopg2-binary>=2.9
+pyyaml>=6.0
+paramiko>=3.0
+dulwich>=0.21
+requests>=2.31
+pytest>=8.0
+pytest-django>=4.8

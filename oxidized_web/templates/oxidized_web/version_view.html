@@ -1,0 +1,12 @@
+{% extends "oxidized_web/base.html" %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <h4>Version View: {{ node_name }} {% if oid %}({{ oid|slice:":8" }}){% endif %}</h4>
+    <hr>
+    <a class="btn btn-secondary mb-3" href="/node/version?node_full={{ node_name }}">Back to Versions</a>
+    <pre class="bg-body-secondary p-3 border rounded"><code>{{ content }}</code></pre>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "oxidized_web/base.html" %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <h4>Search Results for "{{ query }}"</h4>
+    <hr>
+    {% if matches %}
+      <div class="list-group">
+        {% for match in matches %}
+          <div class="list-group-item">
+            <h5><a href="/node/show/{{ match.node }}">{{ match.node }}</a></h5>
+            <pre class="bg-body-secondary p-2"><code>{{ match.line }}</code></pre>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p>No matching lines found.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

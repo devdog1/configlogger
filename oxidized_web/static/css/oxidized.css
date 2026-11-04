@@ -1,0 +1,70 @@
+/* Display status of device in /nodes and /stats */
+.status, .success, .no_connection, .never {
+  float: right;
+  width: 15px;
+  height: 15px;
+  border: 1px solid;
+  margin-right: 70%;
+  margin-bottom: 0px;
+  border-radius: 2px; }
+
+.success {
+  background-color: var(--bs-success);
+}
+
+.no_connection {
+  background-color: var(--bs-danger);
+}
+
+.never {
+  background-color: var(--bs-info);
+}
+
+/* node/version/diffs */
+.added {
+  background-color: var(--bs-success-bg-subtle);
+  color: var(--bs-success-text-emphasis);
+}
+
+.deleted {
+  background-color: var(--bs-danger-bg-subtle);
+  color: var(--bs-danger-text-emphasis);
+}
+
+.diff-index {
+  background-color: var(--bs-warning-bg-subtle);
+  color: var(--bs-warning-text-emphasis);
+}
+
+.diff-empty {
+  background-color: var(--bs-secondary-bg);
+  color: var(--bs-secondary-color);
+}
+
+.diffs, .diffs_old, .diffs_new {
+  background-color: var(--bs-body-bg);
+  border: 2px solid var(--bs-border-color);
+  border-radius: 5px;
+  padding: 3px;
+  font-family: Consolas, "Lucida Console", monospace;
+  white-space: pre; }
+
+.diffs_old {
+  float: left;
+  width: 49%;
+  overflow: auto; }
+
+.diffs_new {
+  margin-left: 51%;
+  width: 49%;
+  overflow: auto; }
+
+.old_version_title {
+  float: left;
+  width: 49%;
+  font-weight: bold; }
+
+.new_version_title {
+  margin-left: 51%;
+  font-weight: bold;
+}

@@ -1,0 +1,83 @@
+{% extends "oxidized_web/base.html" %}
+
+{% block content %}
+<div class="row mb-3">
+  <div class="col-4">
+    <h4>Nodes / {{ filter_value|default:"" }}</h4>
+  </div>
+  <div class="col-8">
+    <div class="float-end" id="oxButtons">
+      <button class="btn btn-primary" type="button" onclick="window.location.reload();">
+        <i class="bi bi-arrow-clockwise"></i> Refresh page
+      </button>
+      <button class="btn btn-primary" id="resetSearch" type="button">
+        <i class="bi bi-eraser-fill"></i> Reset search
+      </button>
+      <a class="btn btn-success" href="/reload">
+        <i class="bi bi-repeat"></i> Reload nodes
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="table-responsive">
+    <table class="table table-sm table-striped table-hover" id="nodesTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>IP</th>
+          <th>Model</th>
+          <th>Group</th>
+          <th>Last Status</th>
+          <th>Last Update</th>
+          <th>Last Changed</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for node in nodes %}
+        <tr>
+          <td><a href="/node/show/{{ node.name }}">{{ node.name }}</a></td>
+          <td>{{ node.ip }}</td>
+          <td><a href="/nodes/model/{{ node.model }}">{{ node.model }}</a></td>
+          <td><a href="/nodes/group/{{ node.group }}">{{ node.group }}</a></td>
+          <td>
+            <div title="{{ node.status }}" class="{{ node.status }}"></div>
+            <span class="d-none">{{ node.status }}</span>
+          </td>
+          <td>{{ node.time }}</td>
+          <td>{{ node.mtime }}</td>
+          <td>
+            <a class="link-body-emphasis" title="Fetch Configuration" href="/node/fetch/{{ node.name }}">
+              <i class="bi bi-cloud-download"></i>
+            </a>
+            &nbsp;
+            <a class="link-body-emphasis" title="Versions" href="/node/version?node_full={{ node.name }}">
+              <i class="bi bi-stack"></i>
+            </a>
+            &nbsp;
+            <a class="link-body-emphasis" title="Queue immediately" href="/node/next/{{ node.name }}">
+              <i class="bi bi-repeat"></i>
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  $(function() {
+    var table = $('#nodesTable').DataTable({
+      autoWidth: false,
+      lengthMenu: [20, 50, 250, 500, { label: 'All', value: -1 }],
+      stateSave: true,
+    });
+    $('#resetSearch').on('click', function() {
+      table.search('').draw();
+    });
+  });
+</script>
+{% endblock %}

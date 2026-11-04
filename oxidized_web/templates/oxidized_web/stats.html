@@ -1,0 +1,44 @@
+{% extends "oxidized_web/base.html" %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <h4>Oxidized Statistics</h4>
+    <hr>
+    <div class="row">
+      <div class="col-md-3">
+        <div class="card text-bg-primary mb-3">
+          <div class="card-body">
+            <h5 class="card-title">Total Nodes</h5>
+            <p class="card-text fs-3">{{ stats.total_nodes }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-bg-success mb-3">
+          <div class="card-body">
+            <h5 class="card-title">Successful</h5>
+            <p class="card-text fs-3">{{ stats.success }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-bg-danger mb-3">
+          <div class="card-body">
+            <h5 class="card-title">Failed</h5>
+            <p class="card-text fs-3">{{ stats.fail }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-bg-secondary mb-3">
+          <div class="card-body">
+            <h5 class="card-title">Never Run</h5>
+            <p class="card-text fs-3">{{ stats.never }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

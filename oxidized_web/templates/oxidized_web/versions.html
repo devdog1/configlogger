@@ -1,0 +1,38 @@
+{% extends "oxidized_web/base.html" %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <h4>Versions for {{ node_name }}</h4>
+    <hr>
+    {% if versions %}
+      <table class="table table-striped table-hover">
+        <thead>
+          <tr>
+            <th>Commit ID</th>
+            <th>Date / Time</th>
+            <th>Author</th>
+            <th>Message</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for v in versions %}
+            <tr>
+              <td><code>{{ v.oid|slice:":8" }}</code></td>
+              <td>{{ v.date }}</td>
+              <td>{{ v.author }}</td>
+              <td>{{ v.message }}</td>
+              <td>
+                <a class="btn btn-sm btn-outline-primary" href="/node/version/view?node_full={{ node_name }}&oid={{ v.oid }}">View</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>No historical versions recorded yet for this node.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
