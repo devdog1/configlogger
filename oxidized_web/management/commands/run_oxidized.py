@@ -10,6 +10,18 @@ class Command(BaseCommand):
         parser.add_argument('--node', type=str, help='Run backup only for a specific node')
 
     def handle(self, *args, **options):
+        import logging, sys
+        if options.get('debug'):
+            logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(levelname)s] %(name)s: %(message)s')
+            paramiko_logger = logging.getLogger("paramiko")
+            paramiko_logger.setLevel(logging.DEBUG)
+            if not paramiko_logger.handlers:
+                ch = logging.StreamHandler(sys.stderr)
+                ch.setLevel(logging.DEBUG)
+                ch.setFormatter(logging.Formatter('[paramiko.ssh] %(levelname)s: %(message)s'))
+                paramiko_logger.addHandler(ch)
+                paramiko_logger.propagate = True
+
         self.stdout.write(self.style.SUCCESS("Starting Oxidized with PostgreSQL configuration..."))
         opts = {}
         if options.get('run_once'):

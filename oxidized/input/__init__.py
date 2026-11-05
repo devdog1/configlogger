@@ -150,6 +150,11 @@ class SSHInput(Input):
         if clear_hostkey:
             self.client.get_host_keys().clear()
 
+        logger.debug(
+            "Initiating SSH connection to %s (%s:%s) with timeout=%ss, kex=%s, hostkey=%s, ciphers=%s",
+            node.name, node.ip, port, timeout, ssh_kex or 'default', ssh_hostkey or 'default', ssh_ciphers or 'default'
+        )
+
         try:
             self.client.connect(
                 hostname=node.ip,
@@ -161,9 +166,10 @@ class SSHInput(Input):
                 allow_agent=False,
                 transport_factory=NodeCustomTransport if (ssh_kex or ssh_hostkey or ssh_ciphers) else None
             )
+            logger.debug("SSH connection successfully established to %s (%s)", node.name, node.ip)
             return True
         except Exception as e:
-            logger.error("SSH connection failed to %s: %s", node.name, e)
+            logger.error("SSH connection failed to %s (%s): %s", node.name, node.ip, e)
             return False
 
     def cmd(self, command):
