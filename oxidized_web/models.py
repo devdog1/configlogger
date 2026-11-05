@@ -210,6 +210,10 @@ class Device(models.Model):
         verbose_name = "Device"
         verbose_name_plural = "Devices (router.db nodes)"
         ordering = ['name']
+        permissions = [
+            ("can_edit_config", "Can edit oxidized configurations and settings"),
+            ("can_pull_node", "Can trigger node pull/refresh"),
+        ]
 
     def __str__(self):
         return f"{self.name} ({self.model})"
@@ -220,7 +224,7 @@ class CustomModel(models.Model):
     name = models.CharField(max_length=64, unique=True, help_text="Model identifier, e.g. 'routeros', 'fortios', 'vyos'")
     description = models.CharField(max_length=255, blank=True, help_text="Short description of OS/Platform")
     prompt_regex = models.CharField(max_length=255, default=r'^([\w.@-]+[#>]\s?)$', help_text="Device prompt regex pattern")
-    comment_prefix = models.CharField(max_length=16, default="! ", help_text="Comment prefix, e.g. '! ' or '# '")
+    comment_prefix = models.CharField(max_length=128, default="! ", help_text="Comment prefix, e.g. '! ' or '# '")
     commands = models.JSONField(
         default=list,
         blank=True,
@@ -246,3 +250,22 @@ class CustomModel(models.Model):
 
     def __str__(self):
         return f"Model: {self.name}"
+
+
+class NodeRevision(models.Model):
+    """Device configuration revision stored directly in the local PostgreSQL database."""
+    node_name = models.CharField(max_length=255, db_index=True)
+    group = models.CharField(max_length=64, default="default", blank=True, db_index=True)
+    oid = models.CharField(max_length=64, unique=True, db_index=True, help_text="Revision hash / identifier")
+    author = models.CharField(max_length=255, default="Oxidized <oxidized@localhost>")
+    message = models.TextField(blank=True)
+    content = models.TextField(help_text="Full configuration backup text")
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        verbose_name = "Node Revision"
+        verbose_name_plural = "Node Revisions (History in PostgreSQL)"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.node_name} @ {self.oid[:8]} ({self.created_at.strftime('%Y-%m-%d %H:%M:%S')})"

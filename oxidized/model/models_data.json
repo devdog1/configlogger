@@ -1,0 +1,1938 @@
+{
+  "acmepacket": {
+    "class_name": "ACMEPACKET",
+    "prompt": "^\\r*([\\w.@()-\\/]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "show running-config"
+    ]
+  },
+  "acos": {
+    "class_name": "ACOS",
+    "prompt": "^([-\\w.\\/:?\\[\\]()]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "show bootimage",
+      "show license",
+      "show partition-config all",
+      "show running-config all-partitions",
+      "show aflex all-partitions"
+    ]
+  },
+  "acsw": {
+    "class_name": "ACSW",
+    "prompt": "([\\w.@()\\/\\\\-]+[#>]\\s?)",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "show inventory",
+      "show running-config"
+    ]
+  },
+  "addpack": {
+    "class_name": "AddPack",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show running-config"
+    ]
+  },
+  "adtran": {
+    "class_name": "Adtran",
+    "prompt": "([\\w.@-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show running-config"
+    ]
+  },
+  "adva": {
+    "class_name": "ADVA",
+    "prompt": "\\w+-+[#>]\\s?$",
+    "comment": "# ",
+    "cmds": [
+      "show running-config delta",
+      "show system",
+      "network-element ne-1",
+      "show shelf-info",
+      "show ports"
+    ]
+  },
+  "aen": {
+    "class_name": "AEN",
+    "prompt": "^([-\\w.\\/:?\\[\\]()]+:\\s?)$",
+    "comment": "# ",
+    "cmds": [
+      "configuration generate-script module all"
+    ]
+  },
+  "aireos": {
+    "class_name": "Aireos",
+    "prompt": "^\\([^)]+\\)\\s*[>#]",
+    "comment": "# ",
+    "cmds": [
+      "show udi",
+      "show boot",
+      "show run-config commands"
+    ]
+  },
+  "airfiber": {
+    "class_name": "Airfiber",
+    "prompt": "^AF[\\w.-]+#",
+    "comment": "! ",
+    "cmds": [
+      "cat /tmp/system.cfg"
+    ]
+  },
+  "airos": {
+    "class_name": "Airos",
+    "prompt": "^[^#]+# ",
+    "comment": "airos version: #{cfg}",
+    "cmds": [
+      "cat /etc/board.info",
+      "cat /etc/version",
+      "sort /tmp/system.cfg"
+    ]
+  },
+  "alteonos": {
+    "class_name": "ALTEONOS",
+    "prompt": "^\\(?.+\\)?\\s?[#>]",
+    "comment": "! ",
+    "cmds": [
+      "cfg/dump"
+    ]
+  },
+  "alvarion": {
+    "class_name": "Alvarion",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "#{node.auth[:password]}.cfg"
+    ]
+  },
+  "aos": {
+    "class_name": "AOS",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show system",
+      "show chassis",
+      "show hardware info",
+      "show license info",
+      "show license file",
+      "show configuration snapshot"
+    ]
+  },
+  "aos7": {
+    "class_name": "AOS7",
+    "prompt": "^([\\w.@-]+ ?[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show system",
+      "show chassis",
+      "show hardware-info",
+      "show running-directory",
+      "show configuration snapshot"
+    ]
+  },
+  "aoscx": {
+    "class_name": "Aoscx",
+    "prompt": "^[\\w\\s.-]+[#>] $",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "show environment",
+      "show module",
+      "show interface transceiver",
+      "show system",
+      "show running-config"
+    ]
+  },
+  "aosw": {
+    "class_name": "AOSW",
+    "prompt": "^\\(?[\\w:.@-]+\\)? ?[*^]?(\\[[\\w\\/]+\\] ?)?[#>] ?$",
+    "comment": "# ",
+    "cmds": [
+      "show version",
+      "show inventory",
+      "show slots",
+      "show license",
+      "show license passphrase",
+      "show running-config"
+    ]
+  },
+  "apc_aos": {
+    "class_name": "Apc_aos",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "; ",
+    "cmds": [
+      "config.ini"
+    ]
+  },
+  "apcaos": {
+    "class_name": "ApcAos",
+    "prompt": "^(:?\\S+@)?apc>",
+    "comment": "; ",
+    "cmds": [
+      "about",
+      "upsabout",
+      "detstatus -ss",
+      "config.ini"
+    ]
+  },
+  "arbos": {
+    "class_name": "ARBOS",
+    "prompt": "^[\\S\\s]+\\n([\\w.@-]+[:\\/#>]+)\\s?$",
+    "comment": "# ",
+    "cmds": [
+      "system hardware",
+      "system version",
+      "config show"
+    ]
+  },
+  "aricentiss": {
+    "class_name": "AricentISS",
+    "prompt": "^(\\x1b\\[27m)?[ \\r]*[\\w-]+# ?$",
+    "comment": "! ",
+    "cmds": [
+      "show system information",
+      "show running-config"
+    ]
+  },
+  "arubainstant": {
+    "class_name": "ArubaInstant",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "# ",
+    "cmds": [
+      "show version",
+      "show activate status",
+      "show aps",
+      "show running-config no-encrypt"
+    ]
+  },
+  "asa": {
+    "class_name": "ASA",
+    "prompt": "^\\r*([\\w.@()-\\/]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show mode",
+      "show version",
+      "show inventory",
+      "more system:running-config",
+      "more disk0:/dap.xml",
+      "changeto system",
+      "show running-config",
+      "more"
+    ]
+  },
+  "asternos": {
+    "class_name": "AsterNOS",
+    "prompt": "^[^$]+\\$",
+    "comment": "# ",
+    "cmds": [
+      "show version",
+      "show runningconfiguration all"
+    ]
+  },
+  "asyncos": {
+    "class_name": "AsyncOS",
+    "prompt": "^\\r*\\(?[\\w.\\- ]+\\)?[#>]\\s+$",
+    "comment": "! ",
+    "cmds": [
+      "version",
+      "showconfig"
+    ]
+  },
+  "audiocodes": {
+    "class_name": "AudioCodes",
+    "prompt": "^\\r?([\\w.@() -]+[#>]\\s?)$",
+    "comment": "## ",
+    "cmds": [
+      "show running-config\\r\\n"
+    ]
+  },
+  "audiocodesmp": {
+    "class_name": "AudioCodesMP",
+    "prompt": "^\\/\\w*>",
+    "comment": ";",
+    "cmds": [
+      "conf",
+      "cf get"
+    ]
+  },
+  "awplus": {
+    "class_name": "AWPlus",
+    "prompt": "^(\\r?[\\w.@:\\/-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "Show System",
+      "show running-config"
+    ]
+  },
+  "axos": {
+    "class_name": "AxOS",
+    "prompt": "(\\x1b\\[\\?7h)?([\\w.@()-]+\\#\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show running-config | nomore"
+    ]
+  },
+  "bdcom": {
+    "class_name": "BDCOM",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show running-config",
+      "show version",
+      "show power-status",
+      "show fan-status"
+    ]
+  },
+  "boss": {
+    "class_name": "Boss",
+    "prompt": "^[^\\s#>]+[#>]$",
+    "comment": "#{cfg}\\n",
+    "cmds": [
+      "show sys-info",
+      "show stack-info",
+      "show running-config"
+    ]
+  },
+  "br6910": {
+    "class_name": "BR6910",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "dir",
+      "show running-config"
+    ]
+  },
+  "c4cmts": {
+    "class_name": "C4CMTS",
+    "prompt": "^([\\w.@:\\/-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show factory-eeprom",
+      "show version",
+      "show running-config"
+    ]
+  },
+  "cambium": {
+    "class_name": "Cambium",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show running-config"
+    ]
+  },
+  "cambiumepmp": {
+    "class_name": "CambiumePMP",
+    "prompt": ".*>",
+    "comment": "! ",
+    "cmds": [
+      "config show json"
+    ]
+  },
+  "casa": {
+    "class_name": "Casa",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show system",
+      "show version",
+      "show run"
+    ]
+  },
+  "catos": {
+    "class_name": "Catos",
+    "prompt": "^[\\w.@-]+>\\s?(\\(enable\\) )?$",
+    "comment": "# ",
+    "cmds": [
+      "show system",
+      "show version",
+      "show conf all"
+    ]
+  },
+  "ciscoce": {
+    "class_name": "CiscoCE",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "/level/15/exec/-/show/startup-config"
+    ]
+  },
+  "cisconga": {
+    "class_name": "CiscoNGA",
+    "prompt": "([\\w.@-]+[#>]\\s?)$",
+    "comment": "# ",
+    "cmds": [
+      "show version",
+      "show configuration"
+    ]
+  },
+  "ciscosma": {
+    "class_name": "CiscoSMA",
+    "prompt": "^\\r*([-\\w. ]+\\.[-\\w. ]+\\.[-\\w. ]+[#>]\\s+)$",
+    "comment": "! ",
+    "cmds": [
+      "version",
+      "showconfig"
+    ]
+  },
+  "ciscosmb": {
+    "class_name": "CiscoSMB",
+    "prompt": "^\\r?([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "show bootvar",
+      "show running-config"
+    ]
+  },
+  "ciscovpn3k": {
+    "class_name": "CiscoVPN3k",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "CONFIG"
+    ]
+  },
+  "cnos": {
+    "class_name": "CNOS",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "show license",
+      "terminal length 0",
+      "show transceiver",
+      "show running-config"
+    ]
+  },
+  "comnetms": {
+    "class_name": "ComnetMS",
+    "prompt": "^\\r?([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show running-config",
+      "show version"
+    ]
+  },
+  "comtrol": {
+    "class_name": "Comtrol",
+    "prompt": "([#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "show running-config"
+    ]
+  },
+  "comware": {
+    "class_name": "Comware",
+    "prompt": "^\\0*(<[\\w.-]+>).?$",
+    "comment": "# ",
+    "cmds": [
+      "super",
+      "_cmdline-mode on",
+      "y",
+      "xtd-cli-mode on",
+      "xtd-cli-mode",
+      "display version",
+      "display device",
+      "display device manuinfo",
+      "display current-configuration"
+    ]
+  },
+  "coriant8600": {
+    "class_name": "Coriant8600",
+    "prompt": "^[^\\s#>]+[#>]$",
+    "comment": "# ",
+    "cmds": [
+      "show hw-inventory",
+      "show flash",
+      "show run"
+    ]
+  },
+  "coriantgroove": {
+    "class_name": "CoriantGroove",
+    "prompt": "^(\\w+@.*>\\s*)$",
+    "comment": "# ",
+    "cmds": [
+      "show inventory",
+      "show softwareload",
+      "show config | display commands"
+    ]
+  },
+  "corianttmos": {
+    "class_name": "CoriantTmos",
+    "prompt": "^[^\\s#]+#\\s$",
+    "comment": "# ",
+    "cmds": [
+      "show node extensive",
+      "show run"
+    ]
+  },
+  "cumulus": {
+    "class_name": "Cumulus",
+    "prompt": "^[\\w.-]+@[\\w.-]+(:mgmt)?:?~[#$] ?$",
+    "comment": "# ",
+    "cmds": [
+      "sudo su -",
+      "su -"
+    ]
+  },
+  "datacom": {
+    "class_name": "DataCom",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show firmware",
+      "show system",
+      "show running-config"
+    ]
+  },
+  "dcnos": {
+    "class_name": "DCNOS",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "show boot-files",
+      "show flash",
+      "show running-config"
+    ]
+  },
+  "defacto": {
+    "class_name": "Defacto",
+    "prompt": "^(\\r*[\\w.:@()\\/_-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show running-config"
+    ]
+  },
+  "dellx": {
+    "class_name": "DellX",
+    "prompt": "[#>]$",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "show system",
+      "show running-config"
+    ]
+  },
+  "dlink": {
+    "class_name": "Dlink",
+    "prompt": "[\\w.@()\\/:-]+[#>]\\s?$",
+    "comment": "# ",
+    "cmds": [
+      "show switch",
+      "show vlan",
+      "show config current"
+    ]
+  },
+  "dlinknextgen": {
+    "class_name": "DlinkNextGen",
+    "prompt": "[\\w.@()\\/-]+[#>]\\s?$",
+    "comment": "# ",
+    "cmds": [
+      "show switch",
+      "show version",
+      "show vlan",
+      "show running-config"
+    ]
+  },
+  "dnos": {
+    "class_name": "DNOS",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show inventory",
+      "show inventory media",
+      "show version",
+      "show running-config"
+    ]
+  },
+  "eatonnetwork": {
+    "class_name": "EatonNetwork",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "save_configuration -p #{@node.auth[:password]}"
+    ]
+  },
+  "eciapollo": {
+    "class_name": "ECIapollo",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "# ",
+    "cmds": [
+      "show running-config"
+    ]
+  },
+  "edgecos": {
+    "class_name": "EdgeCOS",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show running-config",
+      "show system",
+      "show version",
+      "show watchdog",
+      "show interfaces transceiver"
+    ]
+  },
+  "edgeos": {
+    "class_name": "Edgeos",
+    "prompt": "@.*?:~\\$\\s",
+    "comment": "! ",
+    "cmds": [
+      "show version | no-more",
+      "show configuration commands | no-more"
+    ]
+  },
+  "edgeswitch": {
+    "class_name": "EdgeSwitch",
+    "prompt": "\\(.*\\)\\s[#>]",
+    "comment": "!",
+    "cmds": [
+      "show running-config",
+      "terminal length 0"
+    ]
+  },
+  "efos": {
+    "class_name": "EFOS",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show bootvar",
+      "show fiber-ports optical-transceiver-info all",
+      "show running-config"
+    ]
+  },
+  "eltex": {
+    "class_name": "Eltex",
+    "prompt": "^\\s?[\\w.@()-]+[#>]\\s?$",
+    "comment": "! ",
+    "cmds": [
+      "show running-config"
+    ]
+  },
+  "enterasys": {
+    "class_name": "Enterasys",
+    "prompt": "^.+\\w\\((su|rw)\\)->\\s?$",
+    "comment": "!",
+    "cmds": [
+      "show system hardware",
+      "show version",
+      "show config"
+    ]
+  },
+  "enterasys800": {
+    "class_name": "Enterasys800",
+    "prompt": "([\\w (:.@-]+[#>]\\s?)$",
+    "comment": "# ",
+    "cmds": [
+      "show config effective"
+    ]
+  },
+  "enterprise_sonic": {
+    "class_name": "Enterprise_SONiC",
+    "prompt": "^(?:[\\w.-]+@[\\w.-]+:[~\\w\\/-]+\\$|[\\w.-]+#)\\s*",
+    "comment": "# ",
+    "cmds": [
+      "show running-configuration",
+      "show version",
+      "show platform syseeprom",
+      "sonic-cli\\n"
+    ]
+  },
+  "eos": {
+    "class_name": "EOS",
+    "prompt": "^.+[#>]$",
+    "comment": "! ",
+    "cmds": [
+      "show inventory | no-more",
+      "show running-config | no-more | exclude ! Time:"
+    ]
+  },
+  "exalink": {
+    "class_name": "Exalink",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "show port",
+      "show running-config"
+    ]
+  },
+  "f5os": {
+    "class_name": "F5OS",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "!",
+    "cmds": [
+      "show running-config",
+      "paginate false"
+    ]
+  },
+  "fabricos": {
+    "class_name": "FabricOS",
+    "prompt": "^(\\w+:+\\w+>\\s)$",
+    "comment": "# ",
+    "cmds": [
+      "chassisShow",
+      "configShow -all"
+    ]
+  },
+  "fastiron": {
+    "class_name": "FastIron",
+    "prompt": "^([\\w.@\\/()-]+[#>]\\s?)$",
+    "comment": "#{cfg}\\n",
+    "cmds": [
+      "show version",
+      "show module",
+      "show media | exclude EMPTY",
+      "show hardware-info",
+      "show stack | exclude T=",
+      "show running-config"
+    ]
+  },
+  "fiberdriver": {
+    "class_name": "FiberDriver",
+    "prompt": "\\w+#",
+    "comment": "! ",
+    "cmds": [
+      "show inventory",
+      "show running-config"
+    ]
+  },
+  "firebrick": {
+    "class_name": "Firebrick",
+    "prompt": "\\x0a\\x1b\\x5b\\x32\\x4b\\x0d.*>\\s",
+    "comment": "! ",
+    "cmds": [
+      "show status",
+      "show configuration"
+    ]
+  },
+  "firelinuxos": {
+    "class_name": "FireLinuxOS",
+    "prompt": "^[#>]\\(?.+\\)? ?$",
+    "comment": "! ",
+    "cmds": [
+      "show version system",
+      "show inventory",
+      "show running-config all"
+    ]
+  },
+  "firewareos": {
+    "class_name": "FirewareOS",
+    "prompt": "^\\[?\\w*\\]?\\w*?(?:<[\\w-]+>)*(#|>)\\s*$",
+    "comment": "-- ",
+    "cmds": [
+      "show sysinfo",
+      "export config to console"
+    ]
+  },
+  "fortigate": {
+    "class_name": "FortiGate",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "# ",
+    "cmds": [
+      "get system status",
+      "config global",
+      "get system ha status",
+      "get hardware status",
+      "diagnose hardware deviceinfo psu",
+      "get system interface transceiver",
+      "diagnose autoupdate version",
+      "end",
+      "show full-configuration | grep .",
+      "show | grep ."
+    ]
+  },
+  "fortios": {
+    "class_name": "FortiOS",
+    "prompt": "^(\\(\\w\\) )?([-\\w.~()]+(\\s[(\\w\\-.)]+)?~?\\s?[#>$]\\s?)$",
+    "comment": "# ",
+    "cmds": [
+      "get system status",
+      "show"
+    ]
+  },
+  "fortiwlc": {
+    "class_name": "FortiWLC",
+    "prompt": "^([-\\w.\\/:?\\[\\]()]+[#>]\\s?)$",
+    "comment": "# ",
+    "cmds": [
+      "show controller",
+      "show ap",
+      "show running-config"
+    ]
+  },
+  "fsos": {
+    "class_name": "FSOS",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "show running-config"
+    ]
+  },
+  "ftd": {
+    "class_name": "FTD",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show running-config"
+    ]
+  },
+  "ftos": {
+    "class_name": "FTOS",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show inventory",
+      "show inventory media",
+      "show running-config"
+    ]
+  },
+  "fujitsupy": {
+    "class_name": "FujitsuPY",
+    "prompt": "^(\\([\\w.-]*\\)\\s#|^\\S+#\\s)$",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "show system information",
+      "show running-config"
+    ]
+  },
+  "gaiaos": {
+    "class_name": "GaiaOS",
+    "prompt": "^([\\[\\]\\w.@:-]+[#>]\\s?)$",
+    "comment": "# ",
+    "cmds": [
+      "show vsx",
+      "show asset all",
+      "show version all",
+      "show configuration",
+      "show virtual-system all",
+      "set virtual-system #{item[0]}"
+    ]
+  },
+  "garderos": {
+    "class_name": "Garderos",
+    "prompt": "[\\w-]+# ",
+    "comment": "# ",
+    "cmds": [
+      "show system information",
+      "show hardware all",
+      "show hardware wwan wwan0 sim",
+      "show configuration running"
+    ]
+  },
+  "gcombnps": {
+    "class_name": "GcomBNPS",
+    "prompt": "^\\r?([\\w.@()-]+?(\\(1-\\d+ chars\\))?[#>:]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show running-config",
+      "show interface sfp",
+      "show version",
+      "show system"
+    ]
+  },
+  "grandstream": {
+    "class_name": "GrandStream",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "/cgi-bin/dologin?password=%<password>s",
+      "/cgi-bin/download_cfg?sid=#{sid}"
+    ]
+  },
+  "grandstreamht8xx": {
+    "class_name": "GrandstreamHT8xx",
+    "prompt": "^(GS|CONFIG)>\\s?$",
+    "comment": "# ",
+    "cmds": [
+      "export"
+    ]
+  },
+  "h3c": {
+    "class_name": "H3C",
+    "prompt": "^[<\\[][\\w.-]+[>\\]]$",
+    "comment": "# ",
+    "cmds": [
+      "display version",
+      "display device",
+      "display current-configuration"
+    ]
+  },
+  "hatteras": {
+    "class_name": "Hatteras",
+    "prompt": "^(\\r?[\\w.@()-]+[#>]\\s?)$",
+    "comment": "# ",
+    "cmds": [
+      "show switch\\r",
+      "show card\\r",
+      "show sfp *\\r",
+      "show config run\\r"
+    ]
+  },
+  "hios": {
+    "class_name": "Hios",
+    "prompt": "^\\[[\\w\\s\\W]+\\][>|#]+?$",
+    "comment": "## ",
+    "cmds": [
+      "show system info",
+      "show running-config script"
+    ]
+  },
+  "hirschmann": {
+    "class_name": "Hirschmann",
+    "prompt": "^[(\\w\\s)]+\\s[>|#]+?$",
+    "comment": "## ",
+    "cmds": [
+      "show sysinfo",
+      "show running-config"
+    ]
+  },
+  "hpebladesystem": {
+    "class_name": "HPEBladeSystem",
+    "prompt": ".*> ",
+    "comment": "# ",
+    "cmds": [
+      "show oa info",
+      "show oa network",
+      "show oa certificate",
+      "show sshfingerprint",
+      "show fru",
+      "show network",
+      "show vlan",
+      "show rack name",
+      "show server list",
+      "show server names",
+      "show server port map all",
+      "show server info all",
+      "show config"
+    ]
+  },
+  "hpemsa": {
+    "class_name": "HpeMsa",
+    "prompt": "^#\\s?$",
+    "comment": "! ",
+    "cmds": [
+      "show configuration"
+    ]
+  },
+  "hpmsm": {
+    "class_name": "HPMSM",
+    "prompt": "^CLI[>#] +$",
+    "comment": "! ",
+    "cmds": [
+      "show system info",
+      "show ip",
+      "show ip route",
+      "show certificate",
+      "show certificate binding",
+      "show satellites",
+      "show web content",
+      "show all config"
+    ]
+  },
+  "ibos": {
+    "class_name": "IBOS",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "show running-config"
+    ]
+  },
+  "icotera": {
+    "class_name": "Icotera",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "## ",
+    "cmds": [
+      "show management",
+      "copy progress screen"
+    ]
+  },
+  "ingate": {
+    "class_name": "Ingate",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show running-config"
+    ]
+  },
+  "ios": {
+    "class_name": "IOS",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "#{cfg}\\n",
+    "cmds": [
+      "show version",
+      "show vtp status",
+      "show inventory"
+    ]
+  },
+  "iosxe": {
+    "class_name": "Iosxe",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show running-config"
+    ]
+  },
+  "iosxr": {
+    "class_name": "IOSXR",
+    "prompt": "^(\\r?[\\w.@:\\/-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "show inventory all",
+      "show platform",
+      "show running-config"
+    ]
+  },
+  "ipos": {
+    "class_name": "IPOS",
+    "prompt": "^([\\[\\]\\w.@-]+[#:>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show chassis",
+      "show hardware",
+      "show release",
+      "show configuration"
+    ]
+  },
+  "ironware": {
+    "class_name": "IronWare",
+    "prompt": "^.*(telnet|ssh)@.+[>#]\\s?$",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "show chassis",
+      "show flash",
+      "show module",
+      "show running-config"
+    ]
+  },
+  "isam": {
+    "class_name": "ISAM",
+    "prompt": "^([\\w.:@-]+>#\\s)$",
+    "comment": "# ",
+    "cmds": [
+      "show software-mngt oswp detail",
+      "show equipment slot detail",
+      "info configure flat"
+    ]
+  },
+  "ivanti": {
+    "class_name": "Ivanti",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show running-config"
+    ]
+  },
+  "junos": {
+    "class_name": "JunOS",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "# ",
+    "cmds": [
+      "show version",
+      "show configuration | display omit"
+    ]
+  },
+  "kornfeldos": {
+    "class_name": "KornfeldOS",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "# ",
+    "cmds": [
+      "show version | except REPOSITORY | except docker | except Uptime",
+      "show platform firmware",
+      "show running-configuration"
+    ]
+  },
+  "lancom": {
+    "class_name": "LANCOM",
+    "prompt": ">\\s?$",
+    "comment": "# ",
+    "cmds": [
+      "sysinfo\\r",
+      "readscript\\r"
+    ]
+  },
+  "lenovonos": {
+    "class_name": "LenovoNOS",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "show boot",
+      "show transceiver",
+      "show software-key",
+      "show running-config"
+    ]
+  },
+  "linksyssrw": {
+    "class_name": "LinksysSRW",
+    "prompt": "^([\\r\\w.@-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show startup-config",
+      "show version",
+      "show system"
+    ]
+  },
+  "linuxgeneric": {
+    "class_name": "LinuxGeneric",
+    "prompt": "^\\S.*[#$] $",
+    "comment": "# ",
+    "cmds": [
+      "sudo su -",
+      "su -"
+    ]
+  },
+  "masteros": {
+    "class_name": "MasterOS",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "!",
+    "cmds": [
+      "show inventory",
+      "show plugins",
+      "show hw-config",
+      "show running-config"
+    ]
+  },
+  "mimosab11": {
+    "class_name": "Mimosab11",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show running-config"
+    ]
+  },
+  "ml66": {
+    "class_name": "ML66",
+    "prompt": ".*#",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "show inventory hw all",
+      "show inventory sw all",
+      "show license status all",
+      "show running-config"
+    ]
+  },
+  "mlnxos": {
+    "class_name": "MLNXOS",
+    "prompt": "^\\r?\\S* \\[\\S+: (master|standby)\\] [#>] $",
+    "comment": "## ",
+    "cmds": [
+      "show version",
+      "show inventory",
+      "show running-config"
+    ]
+  },
+  "mtrlrfs": {
+    "class_name": "Mtrlrfs",
+    "prompt": "^([\\w.@-]+\\*?[#>])\\s?$",
+    "comment": "# ",
+    "cmds": [
+      "show version",
+      "show licenses",
+      "show running-config"
+    ]
+  },
+  "ndms": {
+    "class_name": "NDMS",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "show running-config"
+    ]
+  },
+  "necix": {
+    "class_name": "NecIX",
+    "prompt": "^(\\([\\w.-]*\\)\\s[#$]|^\\S+[$#]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show running-config"
+    ]
+  },
+  "netgear": {
+    "class_name": "Netgear",
+    "prompt": "^\\(?[\\w \\-+.]+\\)? ?[#>] ?$",
+    "comment": "!",
+    "cmds": [
+      "show version",
+      "show bootvar",
+      "show running-config"
+    ]
+  },
+  "netonix": {
+    "class_name": "Netonix",
+    "prompt": "^[\\w\\s().@_\\/:-]+#",
+    "comment": "! ",
+    "cmds": [
+      "cat config.json;echo"
+    ]
+  },
+  "netscaler": {
+    "class_name": "NetScaler",
+    "prompt": "^(.*[\\w.-]*>\\s?)$",
+    "comment": "# ",
+    "cmds": [
+      "show version",
+      "show hardware",
+      "show partition",
+      "show ns ns.conf",
+      "switch ns partition"
+    ]
+  },
+  "nodegrid": {
+    "class_name": "Nodegrid",
+    "prompt": "(?<!@)\\[(.*?\\s\\/)\\]#",
+    "comment": "# ",
+    "cmds": [
+      "show system/about/",
+      "show settings/license/",
+      "export_settings settings/ --plain-password"
+    ]
+  },
+  "nos": {
+    "class_name": "NOS",
+    "prompt": "^(?:\\x1b\\[..h)?[\\w.-]+# $",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "show inventory",
+      "show license",
+      "show chassis",
+      "show running-config | nomore"
+    ]
+  },
+  "nsxconfig": {
+    "class_name": "NSXConfig",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "/api/4.0/edges/"
+    ]
+  },
+  "nsxdfw": {
+    "class_name": "NSXDfw",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "/policy/api/v1/infra/domains/"
+    ]
+  },
+  "nsxfirewall": {
+    "class_name": "NSXFirewall",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "/api/4.0/edges/"
+    ]
+  },
+  "nxos": {
+    "class_name": "NXOS",
+    "prompt": "^(\\r?[\\w.@_()-]+\\#\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "show inventory all",
+      "show running-config"
+    ]
+  },
+  "ocnos": {
+    "class_name": "OcNOS",
+    "prompt": "([\\w.@-]+[#>]\\s?)$",
+    "comment": "# ",
+    "cmds": [
+      "show version",
+      "show system fru",
+      "show system-information board-info",
+      "show forwarding profile limit",
+      "show license",
+      "show running-config"
+    ]
+  },
+  "onefinity": {
+    "class_name": "OneFinity",
+    "prompt": "(\\r?[\\w.@_()-]+>\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show configuration | display set | nomore"
+    ]
+  },
+  "oneos": {
+    "class_name": "OneOS",
+    "prompt": "^([\\w.@()-]+#\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "show system hardware",
+      "show product-info-area",
+      "show running-config"
+    ]
+  },
+  "openbsd": {
+    "class_name": "Openbsd",
+    "prompt": "^.+@.+:.+\\$",
+    "comment": "# ",
+    "cmds": [
+      "show running-config"
+    ]
+  },
+  "opengear": {
+    "class_name": "OpenGear",
+    "prompt": "^(\\$\\s)$",
+    "comment": "# ",
+    "cmds": [
+      "ogdeviceinfo -r",
+      "config export",
+      "showserial",
+      "config -g config"
+    ]
+  },
+  "openwrt": {
+    "class_name": "OpenWrt",
+    "prompt": "^[^#]+#",
+    "comment": "#### Info: /proc/mtd #####\\n#{cfg}",
+    "cmds": [
+      "cat /etc/banner",
+      "cat /proc/cpuinfo",
+      "cat /etc/openwrt_release",
+      "sysupgrade -l",
+      "cat /proc/mtd"
+    ]
+  },
+  "opnsense": {
+    "class_name": "OpnSense",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "cat /conf/config.xml",
+      "opnsense-version || echo"
+    ]
+  },
+  "os10": {
+    "class_name": "OS10",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show inventory",
+      "show inventory media",
+      "show running-configuration"
+    ]
+  },
+  "os6": {
+    "class_name": "OS6",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "show interfaces transceiver properties",
+      "show running-config"
+    ]
+  },
+  "panos": {
+    "class_name": "PanOS",
+    "prompt": "^[\\w.@:()-]+>\\s?$",
+    "comment": "! ",
+    "cmds": [
+      "show system info",
+      "show config running"
+    ]
+  },
+  "panos_api": {
+    "class_name": "PanOS_API",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show running-config"
+    ]
+  },
+  "perle": {
+    "class_name": "Perle",
+    "prompt": "^[\\w.-]+#",
+    "comment": "! ",
+    "cmds": [
+      "show version verbose",
+      "show system hardware",
+      "show interfaces transceiver",
+      "show running-config"
+    ]
+  },
+  "pfsense": {
+    "class_name": "PfSense",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "cat /cf/conf/config.xml",
+      "cat /etc/version"
+    ]
+  },
+  "planet": {
+    "class_name": "Planet",
+    "prompt": "^\\r?([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "show running-config"
+    ]
+  },
+  "powerconnect": {
+    "class_name": "PowerConnect",
+    "prompt": "^([\\w\\s.@-]+(\\(\\S*\\))?[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "show system",
+      "show running-config",
+      "terminal datadump",
+      "terminal length 0"
+    ]
+  },
+  "procurve": {
+    "class_name": "Procurve",
+    "prompt": "(^\\r|\\x1b\\[24;[0-9][hH])?([\\w\\s.-]+[#>] )($|(\\x1b\\[24;[0-9][0-9]?[hH]){3})",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "show modules",
+      "show interfaces transceiver",
+      "show flash",
+      "show system-information",
+      "show system information",
+      "show running-config"
+    ]
+  },
+  "purityos": {
+    "class_name": "PurityOS",
+    "prompt": "\\w+@\\S+(\\s+\\S+)*\\s?>\\s?$",
+    "comment": "# ",
+    "cmds": [
+      "pureconfig list"
+    ]
+  },
+  "qtech": {
+    "class_name": "QTECH",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "show running-config",
+      "terminal length 0"
+    ]
+  },
+  "quantaos": {
+    "class_name": "QuantaOS",
+    "prompt": "^\\(\\S+\\) (>|#)$",
+    "comment": "! ",
+    "cmds": [
+      "show run"
+    ]
+  },
+  "raisecom": {
+    "class_name": "RAISECOM",
+    "prompt": "([\\w.@-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "show running-config"
+    ]
+  },
+  "rgos": {
+    "class_name": "RGOS",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "#{cfg.cut_both}\\n",
+    "cmds": [
+      "show version",
+      "show running-config"
+    ]
+  },
+  "riverbed": {
+    "class_name": "Riverbed",
+    "prompt": "^.* *[\\w-]+ *[#>] *$",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "show hardware all",
+      "show info",
+      "show running-config",
+      "terminal length 0",
+      "terminal width 1024"
+    ]
+  },
+  "routeros": {
+    "class_name": "RouterOS",
+    "prompt": "\\[\\w+@\\S+(\\s+\\S+)*\\]\\s?>\\s?$",
+    "comment": "# ",
+    "cmds": [
+      "/system resource print",
+      "/system package update print",
+      "/system history print without-paging"
+    ]
+  },
+  "saos": {
+    "class_name": "SAOS",
+    "prompt": "^[\\w-]+\\*?>\\s?",
+    "comment": "! ",
+    "cmds": [
+      "chassis show device-id power",
+      "software show",
+      "port xcvr show",
+      "configuration show"
+    ]
+  },
+  "saos10": {
+    "class_name": "SAOS10",
+    "prompt": "^[\\w-]+\\*?> ?$",
+    "comment": "# ",
+    "cmds": [
+      "show running config"
+    ]
+  },
+  "screenos": {
+    "class_name": "ScreenOS",
+    "prompt": "^[\\w.:()-]+->\\s?$",
+    "comment": "! ",
+    "cmds": [
+      "get system",
+      "get config"
+    ]
+  },
+  "sgos": {
+    "class_name": "SGOS",
+    "prompt": "\\w+>|#",
+    "comment": "!- ",
+    "cmds": [
+      "show licenses",
+      "show general",
+      "show configuration expanded noprompts with-keyrings unencrypted"
+    ]
+  },
+  "siklu": {
+    "class_name": "Siklu",
+    "prompt": "^[\\^M\\s]{0,}[\\w\\-\\s.\"()]+>$",
+    "comment": "! ",
+    "cmds": [
+      "copy startup-configuration display",
+      "copy running-configuration display"
+    ]
+  },
+  "siklumhtg": {
+    "class_name": "SikluMHTG",
+    "prompt": "^\\r?MH-[TN]\\d{3}@\\w{2,8}>$",
+    "comment": "! ",
+    "cmds": [
+      "show startup"
+    ]
+  },
+  "sixwind": {
+    "class_name": "SixWind",
+    "prompt": "^[\\w\\s().@_\\/:-]+> $",
+    "comment": "# ",
+    "cmds": [
+      "show product version",
+      "show config"
+    ]
+  },
+  "slxos": {
+    "class_name": "SLXOS",
+    "prompt": "^.*[>#]\\s?$",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "show chassis",
+      "show system",
+      "show slots",
+      "show running-config"
+    ]
+  },
+  "smartax": {
+    "class_name": "SmartAX",
+    "prompt": "^([\\w.-]+[>#])$",
+    "comment": "#",
+    "cmds": [
+      "display current-configuration"
+    ]
+  },
+  "smartbyte": {
+    "class_name": "SmartByte",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show running-config",
+      "show version",
+      "show interface optical-transceiver info",
+      "show power"
+    ]
+  },
+  "smartcs": {
+    "class_name": "SmartCS",
+    "prompt": "^\\r?([\\w.@() -]+[#>]\\s?)$",
+    "comment": "# ",
+    "cmds": [
+      "show version",
+      "show config"
+    ]
+  },
+  "sonicos": {
+    "class_name": "SonicOS",
+    "prompt": "^\\w+@[\\w-]+>\\(?.+\\)?\\s?",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "show current-config"
+    ]
+  },
+  "speedtouch": {
+    "class_name": "SpeedTouch",
+    "prompt": "([\\w{}=]+>)$",
+    "comment": "! ",
+    "cmds": [
+      ":env list",
+      ":config dump"
+    ]
+  },
+  "sros": {
+    "class_name": "SROS",
+    "prompt": "^([-\\w.:>*]+\\s?[#>]\\s?)$",
+    "comment": "# ",
+    "cmds": [
+      "show bof",
+      "show system information",
+      "show card state",
+      "show chassis",
+      "file type bootlog.txt",
+      "show debug",
+      "file type config.dbg",
+      "admin display-config index\\n",
+      "admin display-config\\n"
+    ]
+  },
+  "srosmd": {
+    "class_name": "SROSMD",
+    "prompt": "^([-\\w.@:>*]+\\s?[#>]\\s?)$",
+    "comment": "# ",
+    "cmds": [
+      "show system information",
+      "show card state",
+      "show chassis",
+      "file show bootlog.txt",
+      "admin show configuration debug full-context",
+      "file show config.dbg",
+      "admin show configuration configure | match persistent-indices post-lines 10000",
+      "admin show configuration bof full-context",
+      "admin show configuration configure full-context"
+    ]
+  },
+  "stoneos": {
+    "class_name": "StoneOS",
+    "prompt": "^\\r?[\\w.()-]+~?[#>](\\s)?$",
+    "comment": "# ",
+    "cmds": [
+      "show configuration running",
+      "show version"
+    ]
+  },
+  "supermicro": {
+    "class_name": "Supermicro",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show running-config"
+    ]
+  },
+  "swos": {
+    "class_name": "SwOS",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "/backup.swb"
+    ]
+  },
+  "tdre": {
+    "class_name": "TDRE",
+    "prompt": "^>$",
+    "comment": "! ",
+    "cmds": [
+      "get -f"
+    ]
+  },
+  "telco": {
+    "class_name": "TELCO",
+    "prompt": "^(\\r?[\\w.@_()-]+\\#\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show running-config"
+    ]
+  },
+  "tmos": {
+    "class_name": "TMOS",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "# ",
+    "cmds": [
+      "tmsh -q show sys hardware field-fmt",
+      "tmsh -q list",
+      "tmsh -q show running-config sys db all-properties"
+    ]
+  },
+  "tnsr": {
+    "class_name": "TNSR",
+    "prompt": "^((\\x08{8}\\x20{8}\\x08{8})?\\r?[\\w-]+\\stnsr#\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show version all",
+      "show configuration running cli"
+    ]
+  },
+  "tplink": {
+    "class_name": "TPLink",
+    "prompt": "^\\r?([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show system-info",
+      "show running-config",
+      "terminal length 0"
+    ]
+  },
+  "trango": {
+    "class_name": "Trango",
+    "prompt": "^#>\\s?",
+    "comment": "# ",
+    "cmds": [
+      "sysinfo"
+    ]
+  },
+  "truenas": {
+    "class_name": "TrueNAS",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "# ",
+    "cmds": [
+      "show running-config"
+    ]
+  },
+  "ucs": {
+    "class_name": "UCS",
+    "prompt": "^(\\r?[\\w.@_()-]+\\#\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show version brief",
+      "show chassis detail",
+      "show fabric-interconnect detail",
+      "show configuration all | no-more"
+    ]
+  },
+  "unifiap": {
+    "class_name": "Unifiap",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "head -4 /etc/board.info",
+      "cat /etc/version",
+      "ifconfig eth0",
+      "cat /etc/hosts",
+      "echo",
+      "ifconfig br0",
+      "cat /tmp/system.cfg",
+      "ps wwww",
+      "[ -e /tmp/run/ntp.ready ] || [ -e /var/run/ntp.ready ] && echo",
+      "ntpclient -d -n -c 2 -i0 -h #{@ntpserver}",
+      "cat /etc/board.info"
+    ]
+  },
+  "uplinkolt": {
+    "class_name": "UPLINKOLT",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "configure terminal",
+      "show version",
+      "show running-config"
+    ]
+  },
+  "viptela": {
+    "class_name": "Viptela",
+    "prompt": "[-\\w]+#\\s$",
+    "comment": "! ",
+    "cmds": [
+      "show running-config",
+      "show version"
+    ]
+  },
+  "voltaire": {
+    "class_name": "VOLTAIRE",
+    "prompt": "([\\w.@()-\\[:\\s\\]]+[#>]\\s|(One or more tests have failed.*))$",
+    "comment": "## ",
+    "cmds": [
+      "version show",
+      "firmware-version show",
+      "remote show",
+      "sm-info show",
+      "show"
+    ]
+  },
+  "voss": {
+    "class_name": "Voss",
+    "prompt": "^[^\\s#>]+[#>]$",
+    "comment": "#{cfg}\\n",
+    "cmds": [
+      "show sys-info",
+      "more config.cfg"
+    ]
+  },
+  "vrp": {
+    "class_name": "VRP",
+    "prompt": "^.*(<[\\w.-]+>)$",
+    "comment": "# ",
+    "cmds": [
+      "display version",
+      "display device",
+      "display current-configuration all"
+    ]
+  },
+  "vsololt": {
+    "class_name": "VSOLOLT",
+    "prompt": "^([\\w.@|()\\/-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "show pon transceiver-info all",
+      "show running-config"
+    ]
+  },
+  "vyatta": {
+    "class_name": "Vyatta",
+    "prompt": "@.*(:~\\$|>)\\s",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "show configuration commands | no-more"
+    ]
+  },
+  "vyos": {
+    "class_name": "Vyos",
+    "prompt": "^\\S+@\\S+(:~\\$|>) $",
+    "comment": "# Last commits:\\n#{cfg.lines.first(4).join}",
+    "cmds": [
+      "show version",
+      "show system commit | no-more",
+      "show configuration commands | no-more"
+    ]
+  },
+  "weos": {
+    "class_name": "WEOS",
+    "prompt": "^(\\s[\\w.@-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show running-config"
+    ]
+  },
+  "xos": {
+    "class_name": "XOS",
+    "prompt": "^\\s?\\*?\\s?[-\\w]+\\s?[-\\w.~]+(:\\d+)? [#>] $",
+    "comment": "# ",
+    "cmds": [
+      "show version",
+      "show diagnostics",
+      "show licenses",
+      "show switch",
+      "show configuration",
+      "show policy detail",
+      "disable clipaging"
+    ]
+  },
+  "yamaha": {
+    "class_name": "Yamaha",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "# ",
+    "cmds": [
+      "show config",
+      "administrator"
+    ]
+  },
+  "zhoneolt": {
+    "class_name": "ZhoneOLT",
+    "prompt": "^(\\r*[\\w.@():-]+>\\s?)$",
+    "comment": "# ",
+    "cmds": [
+      "swversion",
+      "slots",
+      "eeshow card",
+      "ethrpshow",
+      "dump console"
+    ]
+  },
+  "zteolt": {
+    "class_name": "ZTEOLT",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show version-running",
+      "show patch-running",
+      "show running-config"
+    ]
+  },
+  "zy1308": {
+    "class_name": "Zy1308",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "/config_OLT-1308S-22.log"
+    ]
+  },
+  "zynos": {
+    "class_name": "ZyNOS",
+    "prompt": "^([\\w.@()\\-<]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "show system-information",
+      "show running-config"
+    ]
+  },
+  "zynosadsl": {
+    "class_name": "ZyNOSADSL",
+    "prompt": "^.*>\\s?$",
+    "comment": ";; ",
+    "cmds": [
+      "config show all nopause"
+    ]
+  },
+  "zynoscli": {
+    "class_name": "ZyNOSCLI",
+    "prompt": "^([\\w.@()-]+[#>]\\s\\x1b7)$",
+    "comment": ";; ",
+    "cmds": [
+      "show stacking",
+      "show version",
+      "show running-config"
+    ]
+  },
+  "zynosgs": {
+    "class_name": "ZyNOSGS",
+    "prompt": "^.*# $",
+    "comment": "! ",
+    "cmds": [
+      "show running-config"
+    ]
+  },
+  "zynosmgs": {
+    "class_name": "ZyNOSMGS",
+    "prompt": "^([\\w.@()-]+[#>]\\s?)$",
+    "comment": "! ",
+    "cmds": [
+      "show version",
+      "show running-config"
+    ]
+  }
+}

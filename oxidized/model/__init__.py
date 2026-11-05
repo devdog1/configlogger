@@ -1,3 +1,5 @@
+import os
+import json
 import importlib
 import logging
 import re
@@ -15,6 +17,17 @@ MODEL_REGISTRY = {
     'eos': EOS,
     'arista': EOS,
 }
+
+# Load all built-in Oxidized models from models_data.json
+BUILTIN_MODELS_DATA = {}
+models_json_path = os.path.join(os.path.dirname(__file__), "models_data.json")
+if os.path.exists(models_json_path):
+    try:
+        with open(models_json_path, "r", encoding="utf-8") as f:
+            BUILTIN_MODELS_DATA = json.load(f)
+    except Exception as e:
+        logger.error("Failed to load models_data.json: %s", e)
+
 
 def create_dynamic_model(custom_model_obj):
     """Generate a Model subclass dynamically from a CustomModel DB record."""
@@ -55,11 +68,26 @@ def create_dynamic_model(custom_model_obj):
     return dynamic_cls
 
 
+def build_builtin_model(name, data):
+    """Build a Model class definition from data extracted from Oxidized upstream models."""
+    class_name = data.get('class_name') or name.capitalize()
+    model_cls = type(class_name, (Model,), {})
+    model_cls._comment = data.get('comment', '! ')
+    model_cls._prompt = data.get('prompt', r'^([\w.@()-]+[#>]\s?)$')
+
+    cmds = data.get('cmds', ['show running-config'])
+    for c in cmds:
+        model_cls.add_cmd(c)
+
+    return model_cls
+
+
 def resolve_model(name):
     norm_name = str(name).lower()
     if norm_name in MODEL_REGISTRY:
         return MODEL_REGISTRY[norm_name]
 
+    # Check CustomModel in Django DB
     try:
         import django
         from django.apps import apps
@@ -72,6 +100,12 @@ def resolve_model(name):
                 return dyn_cls
     except Exception as e:
         logger.debug("Database model lookup note: %s", e)
+
+    # Check Built-in models from models_data.json
+    if norm_name in BUILTIN_MODELS_DATA:
+        built_cls = build_builtin_model(norm_name, BUILTIN_MODELS_DATA[norm_name])
+        MODEL_REGISTRY[norm_name] = built_cls
+        return built_cls
 
     try:
         mod = importlib.import_module(f"oxidized.model.{norm_name}")

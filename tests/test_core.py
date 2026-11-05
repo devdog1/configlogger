@@ -141,3 +141,52 @@ def test_git_output_versions_and_diff():
         assert '+  no shutdown' in diff
     finally:
         shutil.rmtree(tmp_git, ignore_errors=True)
+
+def test_all_supported_os_types_resolve():
+    import re
+    from oxidized.model import resolve_model
+    from oxidized.model.models import IOS
+
+    # Read Supported-OS-Types.md
+    with open('docs/Supported-OS-Types.md', 'r') as f:
+        content = f.read()
+
+    doc_models = set(m.group(2) for m in re.finditer(r'\[([a-zA-Z0-9_-]+)\]\(/lib/oxidized/model/([a-zA-Z0-9_-]+)\.rb\)', content))
+    assert len(doc_models) >= 190, f"Expected at least 190 models in doc, got {len(doc_models)}"
+
+    resolved_count = 0
+    for model_name in doc_models:
+        cls = resolve_model(model_name)
+        assert cls is not None
+        assert cls != IOS or model_name in ('ios', 'cisco')
+        assert hasattr(cls, '_prompt')
+        assert hasattr(cls, '_comment')
+        assert hasattr(cls, '_cmds')
+        resolved_count += 1
+
+    assert resolved_count == len(doc_models)
+
+def test_legacy_ssh_algorithms_registered():
+    from paramiko.transport import Transport
+    import oxidized.input
+    assert 'diffie-hellman-group-exchange-sha1' in Transport._preferred_kex
+    assert 'diffie-hellman-group14-sha1' in Transport._preferred_kex
+    assert 'diffie-hellman-group1-sha1' in Transport._preferred_kex
+    assert 'ssh-rsa' in Transport._preferred_keys
+
+@pytest.mark.django_db
+def test_postgresql_node_revision_storage():
+    from oxidized.output import DatabaseOutput, _save_pg_revision, _get_pg_versions, _get_pg_diff
+    from oxidized_web.models import NodeRevision
+
+    oid1 = _save_pg_revision("test-db-node", "default", "hostname test-db-node\ninterface Gi0/0\n")
+    assert oid1 is not None
+    oid2 = _save_pg_revision("test-db-node", "default", "hostname test-db-node\ninterface Gi0/0\n ip address 172.16.0.1 255.255.0.0\n")
+    assert oid2 is not None
+
+    versions = _get_pg_versions("test-db-node", "default")
+    assert len(versions) >= 2
+    assert versions[0]['oid'] == oid2
+
+    diff = _get_pg_diff("test-db-node", "default", oid1, oid2)
+    assert "+ ip address 172.16.0.1" in diff

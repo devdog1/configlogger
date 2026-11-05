@@ -21,6 +21,7 @@ urlpatterns = [
     path('reload.json', views.reload_nodes, name='reload_nodes_json'),
 
     path('node/show/<str:node>', views.node_show, name='node_show'),
+    path('node/show/<str:node>.json', views.node_show, name='node_show_json'),
     path('node/fetch/<str:node>', views.node_fetch, name='node_fetch'),
     path('node/fetch/<str:group>/<str:node>', views.node_fetch, name='node_fetch_grouped'),
     path('node/next/<str:node>', views.node_next, name='node_next'),

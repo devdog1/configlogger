@@ -44,7 +44,9 @@ def test_oxidized_web_views_and_api():
         input_type='mock'
     )
 
+    admin_user = User.objects.create_superuser('admin_user', 'admin@test.com', 'adminpass')
     client = Client()
+    client.force_login(admin_user)
 
     # / redirect to /nodes
     resp = client.get('/')
@@ -84,11 +86,13 @@ def test_oxidized_web_views_and_api():
 
     # /node/next/router-test
     resp = client.get('/node/next/router-test')
-    assert resp.status_code == 302
+    assert resp.status_code == 200
+    assert resp.json().get('queued') is True
 
     # /reload
     resp = client.get('/reload')
-    assert resp.status_code == 302
+    assert resp.status_code == 200
+    assert resp.json().get('reloaded') is True
 
     # /nodes/stats
     resp = client.get('/nodes/stats')
@@ -118,7 +122,9 @@ def test_revision_control_and_git_diff_view():
             output_type='git'
         )
 
+        admin_user = User.objects.create_superuser('admin_user2', 'admin2@test.com', 'adminpass')
         client = Client()
+        client.force_login(admin_user)
 
         # Check /node/version
         resp = client.get('/node/version?node_full=core-switch')
@@ -131,7 +137,7 @@ def test_revision_control_and_git_diff_view():
         versions = resp_json.json().get('versions', [])
 
         # Check /node/version/diffs git-style view
-        resp_diff = client.get(f'/node/version/diffs?node_full=core-switch')
+        resp_diff = client.get('/node/version/diffs?node_full=core-switch')
         assert resp_diff.status_code == 200
         assert b'Diff Comparison' in resp_diff.content
     finally:

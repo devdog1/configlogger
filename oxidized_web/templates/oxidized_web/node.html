@@ -26,7 +26,7 @@
               <tr><th>Model:</th><td><span class="badge text-bg-secondary">{{ node.model_name }}</span></td></tr>
               <tr><th>Group:</th><td><span class="badge text-bg-info">{{ node.group }}</span></td></tr>
               <tr><th>Input Driver:</th><td>{{ node.input_class.name }}</td></tr>
-              <tr><th>Output Destination:</th><td>{{ node.output.cfg.directory|default:node.output.cfg.repo|default:"Default" }}</td></tr>
+              <tr><th>Output Destination:</th><td>{{ node.output|default:"PostgreSQL & File" }}</td></tr>
               <tr><th>Timeout / Retries:</th><td>{{ node.timeout }}s / {{ node.retries }} retries</td></tr>
             </table>
           </div>

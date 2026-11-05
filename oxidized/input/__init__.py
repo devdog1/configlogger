@@ -37,6 +37,58 @@ class MockInput(Input):
         return f"! Output for command: {command}\n! Host: {self.node.name if self.node else 'node'}\nhostname {self.node.name if self.node else 'node'}\nend"
 
 
+def _enable_legacy_ssh_algorithms():
+    """Register legacy Diffie-Hellman KEX and RSA key algorithms for networking equipment."""
+    try:
+        import os
+        from hashlib import sha1
+        import paramiko
+        from paramiko import util
+        from paramiko.common import byte_mask
+        from paramiko.transport import Transport
+        from paramiko.kex_group14 import KexGroup14SHA256, b7fffffffffffffff, b0000000000000000
+        from paramiko.kex_gex import KexGexSHA256
+
+        class KexGroup14SHA1(KexGroup14SHA256):
+            name = "diffie-hellman-group14-sha1"
+            hash_algo = sha1
+
+        class KexGroup1SHA1(KexGroup14SHA256):
+            P = 0xFFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7EDEE386BFB5A899FA5AE9F24117C4B1FE649286651ECE653ECA1CDF7
+            G = 2
+            name = "diffie-hellman-group1-sha1"
+            hash_algo = sha1
+
+            def _generate_x(self):
+                while 1:
+                    x_bytes = os.urandom(128)
+                    x_bytes = byte_mask(x_bytes[0], 0x7F) + x_bytes[1:]
+                    if (
+                        x_bytes[:8] != b7fffffffffffffff
+                        and x_bytes[:8] != b0000000000000000
+                    ):
+                        break
+                self.x = util.inflate_long(x_bytes)
+
+        class KexGexSHA1(KexGexSHA256):
+            name = "diffie-hellman-group-exchange-sha1"
+            hash_algo = sha1
+
+        for cls in [KexGroup14SHA1, KexGroup1SHA1, KexGexSHA1]:
+            Transport._kex_info[cls.name] = cls
+            if cls.name not in Transport._preferred_kex:
+                Transport._preferred_kex = Transport._preferred_kex + (cls.name,)
+
+        if 'ssh-rsa' not in Transport._preferred_keys:
+            Transport._key_info['ssh-rsa'] = paramiko.rsakey.RSAKey
+            Transport._preferred_keys = Transport._preferred_keys + ('ssh-rsa',)
+    except Exception as e:
+        logger.debug("Legacy SSH algorithm setup note: %s", e)
+
+
+_enable_legacy_ssh_algorithms()
+
+
 class SSHInput(Input):
     name = "ssh"
 
@@ -48,6 +100,7 @@ class SSHInput(Input):
 
     def connect(self, node):
         import paramiko
+        _enable_legacy_ssh_algorithms()
         self.node = node
         username = node.auth.get('username')
         password = node.auth.get('password')
