@@ -51,6 +51,13 @@ class Node:
         output_type = opt.get('output') or Config.current().output.default
         self.output = resolve_output(output_type, cfg=getattr(Config.current().output, output_type, {}))
 
+        # Per-host interval if set, else system interval
+        opt_interval = opt.get('interval')
+        if opt_interval is not None and str(opt_interval).strip() != "":
+            self.interval = int(opt_interval)
+        else:
+            self.interval = None
+
         self.timeout = int(opt.get('timeout') or Config.current().timeout or 20)
         self.retries = int(opt.get('retries') or Config.current().retries or 3)
         self.stats = NodeStats()
@@ -62,6 +69,17 @@ class Node:
         self.last_modified = opt.get('mtime') if opt.get('mtime') != 'never' else None
         self.initial_status = opt.get('status') or 'never'
         self.initial_time = opt.get('time') or 'never'
+
+        # Rate limiting / anti rapid pulling: minimum interval between pulls (e.g. 5 seconds)
+        self.min_cooldown = int(opt.get('min_cooldown') or 5)
+
+        # Parse initial_time into last_attempt timestamp if available
+        self.last_attempt = None
+        if self.initial_time and self.initial_time != 'never':
+            try:
+                self.last_attempt = datetime.datetime.strptime(self.initial_time, "%Y-%m-%d %H:%M:%S")
+            except Exception:
+                self.last_attempt = None
 
     def _resolve_ip(self, ip_str):
         if '/' in ip_str:
@@ -127,12 +145,67 @@ class Node:
             'error': self.last_error
         }
         self.stats.add(start_time, end_time, status, error=self.last_error)
+        self.last_attempt = end_time
 
         if status == 'success':
             self.last_modified = end_time.strftime("%Y-%m-%d %H:%M:%S")
 
         self._persist_status_to_db(status, start_time, end_time)
         return status == 'success'
+
+    def get_last_status(self):
+        if self.last and 'status' in self.last:
+            return self.last['status']
+        return getattr(self, 'initial_status', 'never')
+
+    def get_last_attempt_time(self):
+        if self.last and self.last.get('end'):
+            return self.last['end']
+        return self.last_attempt
+
+    def is_ready_for_check(self, interval=None, fail_timeout=None):
+        """
+        Check if the node is ready for an auto-check run.
+        Respects:
+          - nexted (manual trigger bypasses wait)
+          - last time config was pulled (success) -> wait interval
+          - failed attempts -> wait fail_timeout / interval period
+        """
+        if self.nexted:
+            return True
+
+        last_time = self.get_last_attempt_time()
+        if not last_time:
+            return True
+
+        last_status = self.get_last_status()
+        now = datetime.datetime.now()
+
+        if last_status == 'success':
+            wait_seconds = self.effective_interval() if interval is None else interval
+        else:
+            # For failed or other non-success attempts: wait the timeout period to try again
+            if fail_timeout is not None:
+                wait_seconds = fail_timeout
+            else:
+                wait_seconds = int(self.timeout or getattr(Config.current(), 'timeout', 20) or 20)
+
+        elapsed = (now - last_time).total_seconds()
+        return elapsed >= wait_seconds
+
+    def effective_interval(self):
+        """Returns per-host interval if configured, else system interval."""
+        if self.interval is not None:
+            return self.interval
+        return int(getattr(Config.current(), 'interval', 3600) or 3600)
+
+    def is_cooling_down(self):
+        """Returns True if the node was pulled very recently (within min_cooldown)."""
+        last_time = self.get_last_attempt_time()
+        if not last_time:
+            return False
+        elapsed = (datetime.datetime.now() - last_time).total_seconds()
+        return elapsed < self.min_cooldown
 
     def _persist_status_to_db(self, status, start_time, end_time):
         """Persist node execution status and timestamps to PostgreSQL database."""

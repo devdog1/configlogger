@@ -15,21 +15,67 @@ def get_nodes(force_reload=False):
         _nodes_instance = Nodes()
     return _nodes_instance
 
-def can_user_access_group(user, group):
-    """Check if authenticated user has permission to view/pull nodes in given group."""
+def can_user_view_node(user, group=None):
+    """Check if user has permission to view nodes."""
     if not user.is_authenticated:
         return False
     if user.is_superuser or user.is_staff:
         return True
-    group_norm = (group or 'default').strip().lower()
-    user_groups = set(g.name.strip().lower() for g in user.groups.all())
-    # User can access if part of matching Django group, or wildcard 'all_nodes'
-    if group_norm in user_groups or 'all_nodes' in user_groups:
+    if not (user.has_perm("oxidized_web.view_device") or user.has_perm("oxidized_web.can_view_node")):
+        return False
+    if group:
+        group_norm = (group or 'default').strip().lower()
+        user_groups = set(g.name.strip().lower() for g in user.groups.all())
+        if group_norm in user_groups or 'all_nodes' in user_groups:
+            return True
+        if user.has_perm(f"oxidized_web.view_group_{group_norm}"):
+            return True
+        return False
+    return True
+
+def can_user_access_group(user, group):
+    """Alias for backwards compatibility and group filtering."""
+    return can_user_view_node(user, group)
+
+def can_user_edit_node(user):
+    """Check if authenticated user has permission to edit nodes."""
+    if not user.is_authenticated:
+        return False
+    if user.is_superuser:
         return True
-    # Or specific permission code: oxidized_web.view_group_<group>
-    if user.has_perm(f"oxidized_web.view_group_{group_norm}"):
+    return user.has_perm("oxidized_web.change_device") or user.has_perm("oxidized_web.can_edit_node")
+
+def can_user_delete_node(user):
+    """Check if authenticated user has permission to delete nodes."""
+    if not user.is_authenticated:
+        return False
+    if user.is_superuser:
         return True
-    return False
+    return user.has_perm("oxidized_web.delete_device") or user.has_perm("oxidized_web.can_delete_node")
+
+def can_user_view_model(user):
+    """Check if authenticated user has permission to view models."""
+    if not user.is_authenticated:
+        return False
+    if user.is_superuser or user.is_staff:
+        return True
+    return user.has_perm("oxidized_web.view_custommodel") or user.has_perm("oxidized_web.can_view_model")
+
+def can_user_edit_model(user):
+    """Check if authenticated user has permission to edit models."""
+    if not user.is_authenticated:
+        return False
+    if user.is_superuser:
+        return True
+    return user.has_perm("oxidized_web.change_custommodel") or user.has_perm("oxidized_web.can_edit_model")
+
+def can_user_delete_model(user):
+    """Check if authenticated user has permission to delete models."""
+    if not user.is_authenticated:
+        return False
+    if user.is_superuser:
+        return True
+    return user.has_perm("oxidized_web.delete_custommodel") or user.has_perm("oxidized_web.can_delete_model")
 
 def can_user_edit_config(user):
     """Check if authenticated user has permission to edit configs/settings."""
@@ -141,6 +187,21 @@ def node_next(request, node_name=None, group=None, node=None):
 
     if not can_user_access_group(request.user, n.group):
         return HttpResponseForbidden("You do not have permission to pull nodes in this group.")
+
+    # Prevent rapid pulling of node config
+    if n.running:
+        return JsonResponse({
+            'node': node_name,
+            'queued': False,
+            'message': 'Node backup is currently in progress. Rapid consecutive pulls are suppressed.'
+        }, status=429)
+
+    if n.is_cooling_down():
+        return JsonResponse({
+            'node': node_name,
+            'queued': False,
+            'message': f'Node was pulled very recently. Please wait {n.min_cooldown}s cooldown between pulls to prevent rapid pulling.'
+        }, status=429)
 
     # If Core worker is running, push to worker head_queue, otherwise run node directly
     core = Core._instance

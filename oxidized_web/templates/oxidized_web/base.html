@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Oxidized | NetBox Edition</title>
+  <title>Oxidized | Network Backup Engine</title>
   <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}">
 
   <link rel="stylesheet" href="{% static 'weblibs/bootstrap.css' %}">
@@ -23,12 +23,12 @@
   <script src="{% static 'weblibs/buttons.colVis.js' %}"></script>
 </head>
 <body>
-  <div id="netbox-layout">
-    <!-- Left NetBox Sidebar Navigation -->
-    <aside id="netbox-sidebar">
-      <a href="/nodes" class="netbox-brand">
-        <div class="netbox-brand-logo">
-          <!-- NetBox-style icon mark -->
+  <div id="ox-layout">
+    <!-- Left Sidebar Navigation -->
+    <aside id="ox-sidebar">
+      <a href="/nodes" class="ox-brand">
+        <div class="ox-brand-logo">
+          <!-- Oxidized Brand Mark -->
           <svg width="28" height="28" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect width="40" height="40" rx="8" fill="#0f172a"/>
             <path d="M14 12V28M26 12V28M10 16H30M10 24H30" stroke="#00b4d8" stroke-width="3" stroke-linecap="round"/>
@@ -39,108 +39,108 @@
           </svg>
         </div>
         <div>
-          <div class="netbox-brand-title">netbox</div>
-          <div class="netbox-brand-sub">OXIDIZED ENGINE</div>
+          <div class="ox-brand-title">OXIDIZED</div>
+          <div class="ox-brand-sub">OXIDIZED ENGINE</div>
         </div>
       </a>
 
-      <ul class="netbox-nav">
+      <ul class="ox-nav">
         <!-- Devices Menu -->
-        <li class="netbox-nav-item">
-          <a class="netbox-nav-link" data-bs-toggle="collapse" href="#menu-devices" role="button" aria-expanded="true">
-            <span class="netbox-nav-label">
+        <li class="ox-nav-item">
+          <a class="ox-nav-link" data-bs-toggle="collapse" href="#menu-devices" role="button" aria-expanded="true">
+            <span class="ox-nav-label">
               <i class="bi bi-hdd-network"></i>
               <span>Devices</span>
             </span>
-            <i class="bi bi-chevron-down netbox-nav-caret"></i>
+            <i class="bi bi-chevron-down ox-nav-caret"></i>
           </a>
           <div class="collapse show" id="menu-devices">
-            <ul class="netbox-submenu">
-              <li><a href="/nodes" class="netbox-submenu-link">Device Inventory</a></li>
-              <li><a href="/admin/oxidized_web/device/" target="_blank" class="netbox-submenu-link">Add Device (router.db)</a></li>
-              <li><a href="/admin/oxidized_web/custommodel/" target="_blank" class="netbox-submenu-link">OS Models (195)</a></li>
+            <ul class="ox-submenu">
+              <li><a href="/nodes" class="ox-submenu-link">Device Inventory</a></li>
+              <li><a href="/admin/oxidized_web/device/" target="_blank" class="ox-submenu-link">Add Device (router.db)</a></li>
+              <li><a href="/admin/oxidized_web/custommodel/" target="_blank" class="ox-submenu-link">OS Models (195)</a></li>
             </ul>
           </div>
         </li>
 
         <!-- Configuration Menu -->
-        <li class="netbox-nav-item">
-          <a class="netbox-nav-link" data-bs-toggle="collapse" href="#menu-config" role="button" aria-expanded="true">
-            <span class="netbox-nav-label">
+        <li class="ox-nav-item">
+          <a class="ox-nav-link" data-bs-toggle="collapse" href="#menu-config" role="button" aria-expanded="true">
+            <span class="ox-nav-label">
               <i class="bi bi-file-earmark-code"></i>
               <span>Configurations</span>
             </span>
-            <i class="bi bi-chevron-down netbox-nav-caret"></i>
+            <i class="bi bi-chevron-down ox-nav-caret"></i>
           </a>
           <div class="collapse show" id="menu-config">
-            <ul class="netbox-submenu">
-              <li><a href="/nodes/conf_search" class="netbox-submenu-link">Config Search</a></li>
-              <li><a href="/admin/oxidized_web/noderevision/" target="_blank" class="netbox-submenu-link">Revisions & Diffs</a></li>
-              <li><a href="/admin/oxidized_web/oxidizedsetting/" target="_blank" class="netbox-submenu-link">Oxidized Settings</a></li>
+            <ul class="ox-submenu">
+              <li><a href="/nodes/conf_search" class="ox-submenu-link">Config Search</a></li>
+              <li><a href="/nodes" target="_blank" class="ox-submenu-link">Revisions & Diffs</a></li>
+              <li><a href="/admin/oxidized_web/oxidizedsetting/" target="_blank" class="ox-submenu-link">Oxidized Settings</a></li>
             </ul>
           </div>
         </li>
 
         <!-- Operations Menu -->
-        <li class="netbox-nav-item">
-          <a class="netbox-nav-link" data-bs-toggle="collapse" href="#menu-ops" role="button" aria-expanded="true">
-            <span class="netbox-nav-label">
+        <li class="ox-nav-item">
+          <a class="ox-nav-link" data-bs-toggle="collapse" href="#menu-ops" role="button" aria-expanded="true">
+            <span class="ox-nav-label">
               <i class="bi bi-graph-up-arrow"></i>
               <span>Operations</span>
             </span>
-            <i class="bi bi-chevron-down netbox-nav-caret"></i>
+            <i class="bi bi-chevron-down ox-nav-caret"></i>
           </a>
           <div class="collapse show" id="menu-ops">
-            <ul class="netbox-submenu">
-              <li><a href="/nodes/stats" class="netbox-submenu-link">Job Statistics</a></li>
-              <li><a href="/reload" class="netbox-submenu-link">Reload Inventory</a></li>
+            <ul class="ox-submenu">
+              <li><a href="/nodes/stats" class="ox-submenu-link">Job Statistics</a></li>
+              <li><a href="/reload" class="ox-submenu-link">Reload Inventory</a></li>
             </ul>
           </div>
         </li>
 
-        <!-- IPAM / Connections placeholder for NetBox likeness -->
-        <li class="netbox-nav-item">
-          <a class="netbox-nav-link" data-bs-toggle="collapse" href="#menu-ipam" role="button" aria-expanded="false">
-            <span class="netbox-nav-label">
+        <!-- IPAM / Routing Section -->
+        <li class="ox-nav-item">
+          <a class="ox-nav-link" data-bs-toggle="collapse" href="#menu-ipam" role="button" aria-expanded="false">
+            <span class="ox-nav-label">
               <i class="bi bi-diagram-3"></i>
               <span>IPAM & Routing</span>
             </span>
-            <i class="bi bi-chevron-down netbox-nav-caret"></i>
+            <i class="bi bi-chevron-down ox-nav-caret"></i>
           </a>
           <div class="collapse" id="menu-ipam">
-            <ul class="netbox-submenu">
-              <li><a href="/nodes" class="netbox-submenu-link">IP Addresses</a></li>
-              <li><a href="/nodes" class="netbox-submenu-link">Device Groups</a></li>
+            <ul class="ox-submenu">
+              <li><a href="/nodes" class="ox-submenu-link">IP Addresses</a></li>
+              <li><a href="/nodes" class="ox-submenu-link">Device Groups</a></li>
             </ul>
           </div>
         </li>
 
         <!-- Admin -->
-        <li class="netbox-nav-item">
-          <a class="netbox-nav-link" href="/admin/" target="_blank">
-            <span class="netbox-nav-label">
+        <li class="ox-nav-item">
+          <a class="ox-nav-link" href="/admin/" target="_blank">
+            <span class="ox-nav-label">
               <i class="bi bi-person-gear"></i>
               <span>Admin</span>
             </span>
-            <i class="bi bi-box-arrow-up-right netbox-nav-caret"></i>
+            <i class="bi bi-box-arrow-up-right ox-nav-caret"></i>
           </a>
         </li>
       </ul>
     </aside>
 
     <!-- Main Content Area -->
-    <main id="netbox-main">
-      <!-- NetBox Top Bar -->
-      <header class="netbox-topbar">
-        <form class="netbox-search-form" action="/nodes/conf_search" method="post">
+    <main id="ox-main">
+      <!-- Top Bar -->
+      <header class="ox-topbar">
+        <form class="ox-search-form" action="/nodes/conf_search" method="post">
           {% csrf_token %}
-          <div class="netbox-search-input-group">
+          <div class="ox-search-input-group">
             <i class="bi bi-search"></i>
-            <input type="text" name="search_in_conf_textbox" class="netbox-search-input" placeholder="Search..." aria-label="Search">
+            <input type="text" name="search_in_conf_textbox" class="ox-search-input" placeholder="Search..." aria-label="Search">
           </div>
         </form>
 
-        <div class="netbox-topbar-actions">
+        <div class="ox-topbar-actions">
           <a class="btn btn-sm btn-outline-secondary" href="/nodes/stats" title="Statistics">
             <i class="bi bi-speedometer2 me-1"></i>Stats
           </a>
@@ -151,7 +151,7 @@
       </header>
 
       <!-- Content Area -->
-      <div class="netbox-container">
+      <div class="ox-container">
         {% block content %}{% endblock %}
       </div>
     </main>

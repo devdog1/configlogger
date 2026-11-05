@@ -1,9 +1,9 @@
 {% extends "oxidized_web/base.html" %}
 
 {% block content %}
-<!-- NetBox Breadcrumbs & Action Bar -->
+<!-- Breadcrumbs & Action Bar -->
 <div class="d-flex justify-content-between align-items-center mb-3">
-  <div class="netbox-breadcrumbs">
+  <div class="ox-breadcrumbs">
     <a href="/nodes"><i class="bi bi-house-door-fill me-1"></i>Home</a>
     <span class="sep">/</span>
     <a href="/nodes">Devices</a>
@@ -31,33 +31,33 @@
   </div>
 </div>
 
-<!-- NetBox Metric Cards Row (Matching image.png structure) -->
+<!-- Metric Cards Row (Matching image.png structure) -->
 <div class="row g-3 mb-4">
   <!-- Organization / Summary Card -->
   <div class="col-md-3">
-    <div class="netbox-card mb-0">
-      <div class="netbox-card-header">
-        <div class="netbox-card-header-left">
+    <div class="ox-card mb-0">
+      <div class="ox-card-header">
+        <div class="ox-card-header-left">
           <i class="bi bi-gear-fill"></i>
-          <span class="netbox-card-header-title">Devices</span>
+          <span class="ox-card-header-title">Devices</span>
         </div>
-        <div class="netbox-card-header-actions">
+        <div class="ox-card-header-actions">
           <i class="bi bi-x-lg" style="font-size: 0.8rem;"></i>
         </div>
       </div>
-      <table class="netbox-card-table">
+      <table class="ox-card-table">
         <tbody>
           <tr>
             <td>Total Nodes</td>
-            <td class="netbox-metric-val">{{ nodes|length }}</td>
+            <td class="ox-metric-val">{{ nodes|length }}</td>
           </tr>
           <tr>
             <td>Groups</td>
-            <td class="netbox-metric-val">default</td>
+            <td class="ox-metric-val">default</td>
           </tr>
           <tr>
             <td>Supported OS Models</td>
-            <td class="netbox-metric-val">195</td>
+            <td class="ox-metric-val">195</td>
           </tr>
         </tbody>
       </table>
@@ -66,29 +66,29 @@
 
   <!-- Operational Status Card -->
   <div class="col-md-3">
-    <div class="netbox-card mb-0">
-      <div class="netbox-card-header">
-        <div class="netbox-card-header-left">
+    <div class="ox-card mb-0">
+      <div class="ox-card-header">
+        <div class="ox-card-header-left">
           <i class="bi bi-gear-fill"></i>
-          <span class="netbox-card-header-title">Operations</span>
+          <span class="ox-card-header-title">Operations</span>
         </div>
-        <div class="netbox-card-header-actions">
+        <div class="ox-card-header-actions">
           <i class="bi bi-x-lg" style="font-size: 0.8rem;"></i>
         </div>
       </div>
-      <table class="netbox-card-table">
+      <table class="ox-card-table">
         <tbody>
           <tr>
             <td>Engine State</td>
-            <td class="netbox-metric-val text-success"><i class="bi bi-check-circle-fill me-1"></i>Active</td>
+            <td class="ox-metric-val text-success"><i class="bi bi-check-circle-fill me-1"></i>Active</td>
           </tr>
           <tr>
             <td>Backend Storage</td>
-            <td class="netbox-metric-val text-primary">PostgreSQL</td>
+            <td class="ox-metric-val text-primary">PostgreSQL</td>
           </tr>
           <tr>
             <td>Threads Running</td>
-            <td class="netbox-metric-val">30</td>
+            <td class="ox-metric-val">30</td>
           </tr>
         </tbody>
       </table>
@@ -97,29 +97,29 @@
 
   <!-- IPAM Card -->
   <div class="col-md-3">
-    <div class="netbox-card mb-0">
-      <div class="netbox-card-header">
-        <div class="netbox-card-header-left">
+    <div class="ox-card mb-0">
+      <div class="ox-card-header">
+        <div class="ox-card-header-left">
           <i class="bi bi-gear-fill"></i>
-          <span class="netbox-card-header-title">IPAM</span>
+          <span class="ox-card-header-title">IPAM</span>
         </div>
-        <div class="netbox-card-header-actions">
+        <div class="ox-card-header-actions">
           <i class="bi bi-x-lg" style="font-size: 0.8rem;"></i>
         </div>
       </div>
-      <table class="netbox-card-table">
+      <table class="ox-card-table">
         <tbody>
           <tr>
             <td>IP Addresses</td>
-            <td class="netbox-metric-val">{{ nodes|length }}</td>
+            <td class="ox-metric-val">{{ nodes|length }}</td>
           </tr>
           <tr>
             <td>SSH / Telnet Endpoints</td>
-            <td class="netbox-metric-val">{{ nodes|length }}</td>
+            <td class="ox-metric-val">{{ nodes|length }}</td>
           </tr>
           <tr>
             <td>Config Revisions</td>
-            <td class="netbox-metric-val">Tracking</td>
+            <td class="ox-metric-val">Tracking</td>
           </tr>
         </tbody>
       </table>
@@ -128,29 +128,29 @@
 
   <!-- Config & Settings Card -->
   <div class="col-md-3">
-    <div class="netbox-card mb-0">
-      <div class="netbox-card-header">
-        <div class="netbox-card-header-left">
+    <div class="ox-card mb-0">
+      <div class="ox-card-header">
+        <div class="ox-card-header-left">
           <i class="bi bi-gear-fill"></i>
-          <span class="netbox-card-header-title">System Settings</span>
+          <span class="ox-card-header-title">System Settings</span>
         </div>
-        <div class="netbox-card-header-actions">
+        <div class="ox-card-header-actions">
           <i class="bi bi-x-lg" style="font-size: 0.8rem;"></i>
         </div>
       </div>
-      <table class="netbox-card-table">
+      <table class="ox-card-table">
         <tbody>
           <tr>
             <td>Config Mode</td>
-            <td class="netbox-metric-val">Django DB</td>
+            <td class="ox-metric-val">Django DB</td>
           </tr>
           <tr>
             <td>Output Driver</td>
-            <td class="netbox-metric-val">db</td>
+            <td class="ox-metric-val">db</td>
           </tr>
           <tr>
             <td>router.db Mode</td>
-            <td class="netbox-metric-val">PostgreSQL</td>
+            <td class="ox-metric-val">PostgreSQL</td>
           </tr>
         </tbody>
       </table>
@@ -158,20 +158,20 @@
   </div>
 </div>
 
-<!-- NetBox Device Table / Change Log style Card -->
-<div class="netbox-card">
-  <div class="netbox-card-header">
-    <div class="netbox-card-header-left">
+<!-- Device Table / Change Log style Card -->
+<div class="ox-card">
+  <div class="ox-card-header">
+    <div class="ox-card-header-left">
       <i class="bi bi-gear-fill"></i>
-      <span class="netbox-card-header-title">Device List</span>
+      <span class="ox-card-header-title">Device List</span>
     </div>
-    <div class="netbox-card-header-actions">
+    <div class="ox-card-header-actions">
       <span>{{ nodes|length }} Devices</span>
     </div>
   </div>
 
   <div class="table-responsive p-0">
-    <table class="netbox-table align-middle" id="nodesTable">
+    <table class="ox-table align-middle" id="nodesTable">
       <thead>
         <tr>
           <th>NAME</th>
@@ -207,11 +207,11 @@
           </td>
           <td>
             {% if node.status == "success" %}
-              <span class="netbox-pill netbox-pill-green"><i class="bi bi-check-circle me-1"></i>Success</span>
+              <span class="ox-pill ox-pill-green"><i class="bi bi-check-circle me-1"></i>Success</span>
             {% elif node.status == "fail" or node.status == "no_connection" %}
-              <span class="netbox-pill netbox-pill-red"><i class="bi bi-x-circle me-1"></i>{{ node.status }}</span>
+              <span class="ox-pill ox-pill-red"><i class="bi bi-x-circle me-1"></i>{{ node.status }}</span>
             {% else %}
-              <span class="netbox-pill netbox-pill-gray"><i class="bi bi-dash-circle me-1"></i>Never</span>
+              <span class="ox-pill ox-pill-gray"><i class="bi bi-dash-circle me-1"></i>Never</span>
             {% endif %}
           </td>
           <td>

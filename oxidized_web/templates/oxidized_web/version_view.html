@@ -1,9 +1,9 @@
 {% extends "oxidized_web/base.html" %}
 
 {% block content %}
-<!-- NetBox Breadcrumbs & Action Bar -->
+<!-- Breadcrumbs & Action Bar -->
 <div class="d-flex justify-content-between align-items-center mb-3">
-  <div class="netbox-breadcrumbs">
+  <div class="ox-breadcrumbs">
     <a href="/nodes"><i class="bi bi-house-door-fill me-1"></i>Home</a>
     <span class="sep">/</span>
     <a href="/nodes">Devices</a>
@@ -25,18 +25,18 @@
   </div>
 </div>
 
-<div class="netbox-card">
-  <div class="netbox-card-header">
-    <div class="netbox-card-header-left">
+<div class="ox-card">
+  <div class="ox-card-header">
+    <div class="ox-card-header-left">
       <i class="bi bi-gear-fill"></i>
-      <span class="netbox-card-header-title">Config Snapshot: {{ node_name }} ({{ oid|slice:":8"|default:"Latest" }})</span>
+      <span class="ox-card-header-title">Config Snapshot: {{ node_name }} ({{ oid|slice:":8"|default:"Latest" }})</span>
     </div>
-    <div class="netbox-card-header-actions">
+    <div class="ox-card-header-actions">
       <code>{{ oid|default:"latest" }}</code>
     </div>
   </div>
 
-  <div class="netbox-card-body p-0">
+  <div class="ox-card-body p-0">
     <pre class="m-0 p-3 bg-light border-0" style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.85rem; max-height: 75vh; overflow-y: auto;"><code>{{ content }}</code></pre>
   </div>
 </div>

@@ -131,6 +131,7 @@ class DjangoSource(Source):
                     'password': dev.password,
                     'input': dev.input_type or 'ssh',
                     'output': dev.output_type or 'db',
+                    'interval': dev.interval,
                     'vars': merged_vars,
                     'ssh_kex': dev.ssh_kex,
                     'ssh_hostkey': dev.ssh_hostkey,

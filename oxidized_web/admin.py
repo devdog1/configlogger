@@ -141,12 +141,16 @@ class RouterDbEntryAdmin(admin.ModelAdmin):
 @admin.register(Device)
 class DeviceAdmin(admin.ModelAdmin):
     form = DeviceAdminForm
-    list_display = ('name', 'ip', 'model', 'group', 'input_type', 'output_type', 'enabled', 'updated_at')
+    list_display = ('name', 'ip', 'model', 'group', 'interval', 'input_type', 'output_type', 'enabled', 'updated_at')
     list_filter = ('model', 'group', 'input_type', 'output_type', 'enabled')
     search_fields = ('name', 'ip', 'model', 'group')
     fieldsets = (
         (None, {
             'fields': ('name', 'ip', 'model', 'group', 'enabled')
+        }),
+        ('Polling & Schedule', {
+            'fields': ('interval',),
+            'description': 'Per-host collection interval in seconds (leave blank to use system interval).'
         }),
         ('Authentication & Driver', {
             'fields': ('username', 'password', 'input_type', 'output_type')
@@ -159,6 +163,21 @@ class DeviceAdmin(admin.ModelAdmin):
             'fields': ('extra_vars',)
         }),
     )
+
+    def has_view_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        return request.user.has_perm('oxidized_web.view_device') or request.user.has_perm('oxidized_web.can_view_node')
+
+    def has_change_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        return request.user.has_perm('oxidized_web.change_device') or request.user.has_perm('oxidized_web.can_edit_node')
+
+    def has_delete_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        return request.user.has_perm('oxidized_web.delete_device') or request.user.has_perm('oxidized_web.can_delete_node')
 
 
 @admin.register(CustomModel)
@@ -184,10 +203,20 @@ class CustomModelAdmin(admin.ModelAdmin):
         })
     )
 
+    def has_view_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        return request.user.has_perm('oxidized_web.view_custommodel') or request.user.has_perm('oxidized_web.can_view_model')
 
-@admin.register(NodeRevision)
-class NodeRevisionAdmin(admin.ModelAdmin):
-    list_display = ('node_name', 'group', 'oid', 'author', 'created_at')
-    list_filter = ('group', 'created_at')
-    search_fields = ('node_name', 'group', 'oid', 'message')
-    readonly_fields = ('node_name', 'group', 'oid', 'author', 'message', 'content', 'created_at')
+    def has_change_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        return request.user.has_perm('oxidized_web.change_custommodel') or request.user.has_perm('oxidized_web.can_edit_model')
+
+    def has_delete_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        return request.user.has_perm('oxidized_web.delete_custommodel') or request.user.has_perm('oxidized_web.can_delete_model')
+
+# Note: Node configs (NodeRevision) are removed from Django Admin per user instructions,
+# and are accessed and managed strictly through the web UI and REST API.

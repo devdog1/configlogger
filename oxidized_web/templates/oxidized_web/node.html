@@ -1,9 +1,9 @@
 {% extends "oxidized_web/base.html" %}
 
 {% block content %}
-<!-- NetBox Breadcrumbs & Action Bar -->
+<!-- Breadcrumbs & Action Bar -->
 <div class="d-flex justify-content-between align-items-center mb-3">
-  <div class="netbox-breadcrumbs">
+  <div class="ox-breadcrumbs">
     <a href="/nodes"><i class="bi bi-house-door-fill me-1"></i>Home</a>
     <span class="sep">/</span>
     <a href="/nodes">Devices</a>
@@ -30,51 +30,51 @@
 <div class="row g-3 mb-4">
   <!-- Device Details Card -->
   <div class="col-md-6">
-    <div class="netbox-card h-100 mb-0">
-      <div class="netbox-card-header">
-        <div class="netbox-card-header-left">
+    <div class="ox-card h-100 mb-0">
+      <div class="ox-card-header">
+        <div class="ox-card-header-left">
           <i class="bi bi-gear-fill"></i>
-          <span class="netbox-card-header-title">Device Configuration</span>
+          <span class="ox-card-header-title">Device Configuration</span>
         </div>
-        <div class="netbox-card-header-actions">
+        <div class="ox-card-header-actions">
           <a href="/admin/oxidized_web/device/" target="_blank" title="Edit in Admin"><i class="bi bi-pencil-square"></i></a>
         </div>
       </div>
-      <table class="netbox-card-table">
+      <table class="ox-card-table">
         <tbody>
           <tr>
             <td>Device Name</td>
-            <td class="netbox-metric-val"><code>{{ node.name }}</code></td>
+            <td class="ox-metric-val"><code>{{ node.name }}</code></td>
           </tr>
           <tr>
             <td>IP Address / Hostname</td>
-            <td class="netbox-metric-val"><code>{{ node.ip }}</code></td>
+            <td class="ox-metric-val"><code>{{ node.ip }}</code></td>
           </tr>
           <tr>
             <td>OS Model</td>
-            <td class="netbox-metric-val">
+            <td class="ox-metric-val">
               <span class="badge bg-light text-dark border">{{ node.model_name|default:node.model }}</span>
             </td>
           </tr>
           <tr>
             <td>Device Group</td>
-            <td class="netbox-metric-val">
+            <td class="ox-metric-val">
               <span class="badge bg-light text-primary border">{{ node.group }}</span>
             </td>
           </tr>
           <tr>
             <td>Input Driver</td>
-            <td class="netbox-metric-val">
+            <td class="ox-metric-val">
               <span class="badge bg-secondary">{{ node.input_driver|default:node.input|default:"ssh" }}</span>
             </td>
           </tr>
           <tr>
             <td>Output Driver</td>
-            <td class="netbox-metric-val">{{ node.output|default:"PostgreSQL (db)" }}</td>
+            <td class="ox-metric-val">{{ node.output|default:"PostgreSQL (db)" }}</td>
           </tr>
           <tr>
             <td>Timeout / Retries</td>
-            <td class="netbox-metric-val">{{ node.timeout }}s / {{ node.retries }} retries</td>
+            <td class="ox-metric-val">{{ node.timeout }}s / {{ node.retries }} retries</td>
           </tr>
         </tbody>
       </table>
@@ -95,45 +95,45 @@
 
   <!-- Operational & Execution Card -->
   <div class="col-md-6">
-    <div class="netbox-card h-100 mb-0">
-      <div class="netbox-card-header">
-        <div class="netbox-card-header-left">
+    <div class="ox-card h-100 mb-0">
+      <div class="ox-card-header">
+        <div class="ox-card-header-left">
           <i class="bi bi-gear-fill"></i>
-          <span class="netbox-card-header-title">Status & Metrics</span>
+          <span class="ox-card-header-title">Status & Metrics</span>
         </div>
-        <div class="netbox-card-header-actions">
+        <div class="ox-card-header-actions">
           <i class="bi bi-activity"></i>
         </div>
       </div>
-      <table class="netbox-card-table">
+      <table class="ox-card-table">
         <tbody>
           <tr>
             <td>Last Backup Status</td>
-            <td class="netbox-metric-val">
+            <td class="ox-metric-val">
               {% if node.last.status == "success" %}
-                <span class="netbox-pill netbox-pill-green"><i class="bi bi-check-circle me-1"></i>Success</span>
+                <span class="ox-pill ox-pill-green"><i class="bi bi-check-circle me-1"></i>Success</span>
               {% elif node.last.status %}
-                <span class="netbox-pill netbox-pill-red"><i class="bi bi-x-circle me-1"></i>{{ node.last.status }}</span>
+                <span class="ox-pill ox-pill-red"><i class="bi bi-x-circle me-1"></i>{{ node.last.status }}</span>
               {% else %}
-                <span class="netbox-pill netbox-pill-gray">Never Run</span>
+                <span class="ox-pill ox-pill-gray">Never Run</span>
               {% endif %}
             </td>
           </tr>
           <tr>
             <td>Connection Attempts</td>
-            <td class="netbox-metric-val"><strong>{{ node.attempts|default:"0" }}</strong></td>
+            <td class="ox-metric-val"><strong>{{ node.attempts|default:"0" }}</strong></td>
           </tr>
           <tr>
             <td>Execution Duration</td>
-            <td class="netbox-metric-val">{{ node.last.time|default:"0" }}s</td>
+            <td class="ox-metric-val">{{ node.last.time|default:"0" }}s</td>
           </tr>
           <tr>
             <td>Last Run Timestamp</td>
-            <td class="netbox-metric-val">{{ node.last.end|default:"Never" }}</td>
+            <td class="ox-metric-val">{{ node.last.end|default:"Never" }}</td>
           </tr>
           <tr>
             <td>Error / Failure Reason</td>
-            <td class="netbox-metric-val">
+            <td class="ox-metric-val">
               {% if node.last_error %}
                 <span class="text-danger small"><i class="bi bi-exclamation-triangle-fill me-1"></i>{{ node.last_error }}</span>
               {% else %}
@@ -149,18 +149,18 @@
 
 <!-- Recent Execution Change Log / History -->
 {% if node.stats.history %}
-<div class="netbox-card">
-  <div class="netbox-card-header">
-    <div class="netbox-card-header-left">
+<div class="ox-card">
+  <div class="ox-card-header">
+    <div class="ox-card-header-left">
       <i class="bi bi-gear-fill"></i>
-      <span class="netbox-card-header-title">Recent Execution History</span>
+      <span class="ox-card-header-title">Recent Execution History</span>
     </div>
-    <div class="netbox-card-header-actions">
+    <div class="ox-card-header-actions">
       <span>{{ node.stats.history|length }} runs</span>
     </div>
   </div>
   <div class="table-responsive">
-    <table class="netbox-table align-middle">
+    <table class="ox-table align-middle">
       <thead>
         <tr>
           <th>START TIME</th>
@@ -178,9 +178,9 @@
           <td>{{ h.time }}s</td>
           <td>
             {% if h.status == 'success' %}
-              <span class="netbox-pill netbox-pill-green">Success</span>
+              <span class="ox-pill ox-pill-green">Success</span>
             {% else %}
-              <span class="netbox-pill netbox-pill-red">{{ h.status }}</span>
+              <span class="ox-pill ox-pill-red">{{ h.status }}</span>
             {% endif %}
           </td>
           <td><span class="text-danger small">{{ h.error|default:"—" }}</span></td>

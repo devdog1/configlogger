@@ -37,9 +37,11 @@ class Worker:
     def next(self, node_name):
         node = self.nodes.get(node_name)
         if node:
+            node.nexted = True
             if node in self.queue:
                 self.queue.remove(node)
-            self.head_queue.insert(0, node)
+            if node not in self.head_queue:
+                self.head_queue.insert(0, node)
             return True
         return False
 
@@ -47,11 +49,45 @@ class Worker:
         if not self.head_queue and not self.queue:
             return
 
-        node = self.head_queue.pop(0) if self.head_queue else self.queue.pop(0)
-        if node.running:
-            self.queue.append(node)
+        # Head queue items have priority (e.g. manual trigger or explicitly nexted)
+        if self.head_queue:
+            node = self.head_queue.pop(0)
+            if node.running:
+                self.head_queue.append(node)
+                return
+            node.nexted = False
+            self._dispatch_node(node)
             return
 
+        # Regular auto check queue: check node readiness respecting interval and timeout
+        timeout = int(getattr(self.cfg, 'timeout', 20) or 20)
+
+        # Inspect nodes in the queue to find one ready for checking
+        ready_node = None
+        checked_count = 0
+        total_in_queue = len(self.queue)
+
+        while checked_count < total_in_queue:
+            candidate = self.queue.pop(0)
+            checked_count += 1
+
+            if candidate.running:
+                self.queue.append(candidate)
+                continue
+
+            node_timeout = int(getattr(candidate, 'timeout', timeout) or timeout)
+            # is_ready_for_check automatically uses candidate.effective_interval() and candidate.timeout
+            if candidate.is_ready_for_check(fail_timeout=node_timeout):
+                ready_node = candidate
+                break
+            else:
+                # Not yet ready (waiting interval after success, or timeout after failure)
+                self.queue.append(candidate)
+
+        if ready_node:
+            self._dispatch_node(ready_node)
+
+    def _dispatch_node(self, node):
         def task(n):
             logger.info("Worker starting node %s", n.name)
             self.hooks.handle('node_start', node=n)

@@ -1,9 +1,9 @@
 {% extends "oxidized_web/base.html" %}
 
 {% block content %}
-<!-- NetBox Breadcrumbs & Action Bar -->
+<!-- Breadcrumbs & Action Bar -->
 <div class="d-flex justify-content-between align-items-center mb-3">
-  <div class="netbox-breadcrumbs">
+  <div class="ox-breadcrumbs">
     <a href="/nodes"><i class="bi bi-house-door-fill me-1"></i>Home</a>
     <span class="sep">/</span>
     <a href="/nodes/stats">Operations</a>
@@ -23,14 +23,14 @@
 
 <div class="row g-3 mb-4">
   <div class="col-md-3">
-    <div class="netbox-card mb-0">
-      <div class="netbox-card-header">
-        <div class="netbox-card-header-left">
+    <div class="ox-card mb-0">
+      <div class="ox-card-header">
+        <div class="ox-card-header-left">
           <i class="bi bi-gear-fill"></i>
-          <span class="netbox-card-header-title">Total Nodes</span>
+          <span class="ox-card-header-title">Total Nodes</span>
         </div>
       </div>
-      <div class="netbox-card-body text-center py-4">
+      <div class="ox-card-body text-center py-4">
         <div class="display-5 fw-bold text-primary">{{ stats.total_nodes }}</div>
         <div class="text-muted small mt-1">Configured Inventory</div>
       </div>
@@ -38,14 +38,14 @@
   </div>
 
   <div class="col-md-3">
-    <div class="netbox-card mb-0">
-      <div class="netbox-card-header" style="background-color: #2b8a3e;">
-        <div class="netbox-card-header-left">
+    <div class="ox-card mb-0">
+      <div class="ox-card-header" style="background-color: #2b8a3e;">
+        <div class="ox-card-header-left">
           <i class="bi bi-check-circle-fill"></i>
-          <span class="netbox-card-header-title">Successful</span>
+          <span class="ox-card-header-title">Successful</span>
         </div>
       </div>
-      <div class="netbox-card-body text-center py-4">
+      <div class="ox-card-body text-center py-4">
         <div class="display-5 fw-bold text-success">{{ stats.success }}</div>
         <div class="text-muted small mt-1">Backups Succeeded</div>
       </div>
@@ -53,14 +53,14 @@
   </div>
 
   <div class="col-md-3">
-    <div class="netbox-card mb-0">
-      <div class="netbox-card-header" style="background-color: #c92a2a;">
-        <div class="netbox-card-header-left">
+    <div class="ox-card mb-0">
+      <div class="ox-card-header" style="background-color: #c92a2a;">
+        <div class="ox-card-header-left">
           <i class="bi bi-x-circle-fill"></i>
-          <span class="netbox-card-header-title">Failed</span>
+          <span class="ox-card-header-title">Failed</span>
         </div>
       </div>
-      <div class="netbox-card-body text-center py-4">
+      <div class="ox-card-body text-center py-4">
         <div class="display-5 fw-bold text-danger">{{ stats.fail }}</div>
         <div class="text-muted small mt-1">Connection or Model Errors</div>
       </div>
@@ -68,14 +68,14 @@
   </div>
 
   <div class="col-md-3">
-    <div class="netbox-card mb-0">
-      <div class="netbox-card-header" style="background-color: #495057;">
-        <div class="netbox-card-header-left">
+    <div class="ox-card mb-0">
+      <div class="ox-card-header" style="background-color: #495057;">
+        <div class="ox-card-header-left">
           <i class="bi bi-dash-circle-fill"></i>
-          <span class="netbox-card-header-title">Never Run</span>
+          <span class="ox-card-header-title">Never Run</span>
         </div>
       </div>
-      <div class="netbox-card-body text-center py-4">
+      <div class="ox-card-body text-center py-4">
         <div class="display-5 fw-bold text-secondary">{{ stats.never }}</div>
         <div class="text-muted small mt-1">Pending Initial Collection</div>
       </div>

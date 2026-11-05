@@ -221,3 +221,45 @@ def test_ssh_crypto_options_and_transport():
     assert d['model'] == 'ios'
     assert d['timeout'] == node.timeout
     assert d['retries'] == node.retries
+
+@pytest.mark.django_db
+def test_node_interval_timeout_and_anti_rapid_pulling():
+    import datetime
+    from oxidized.worker import Worker
+
+    # 1. System interval vs per-host interval
+    n_sys = Node({'name': 'n-sys', 'input': 'mock', 'output': 'db'})
+    assert n_sys.interval is None
+    assert n_sys.effective_interval() == Config.current().interval
+
+    n_custom = Node({'name': 'n-custom', 'input': 'mock', 'output': 'db', 'interval': 120})
+    assert n_custom.interval == 120
+    assert n_custom.effective_interval() == 120
+
+    # 2. Success wait interval
+    n_custom.last = {
+        'start': datetime.datetime.now() - datetime.timedelta(seconds=80),
+        'end': datetime.datetime.now() - datetime.timedelta(seconds=70),
+        'status': 'success'
+    }
+    assert not n_custom.is_ready_for_check()
+    n_custom.last['end'] = datetime.datetime.now() - datetime.timedelta(seconds=130)
+    assert n_custom.is_ready_for_check()
+
+    # 3. Failed attempt wait timeout
+    n_fail = Node({'name': 'n-fail', 'input': 'mock', 'output': 'db', 'timeout': 15})
+    n_fail.last = {
+        'start': datetime.datetime.now() - datetime.timedelta(seconds=10),
+        'end': datetime.datetime.now() - datetime.timedelta(seconds=5),
+        'status': 'fail'
+    }
+    assert not n_fail.is_ready_for_check()
+    n_fail.last['end'] = datetime.datetime.now() - datetime.timedelta(seconds=20)
+    assert n_fail.is_ready_for_check()
+
+    # 4. Anti rapid pulling / cooldown
+    n_rapid = Node({'name': 'n-rapid', 'input': 'mock', 'output': 'db', 'min_cooldown': 5})
+    n_rapid.last_attempt = datetime.datetime.now() - datetime.timedelta(seconds=2)
+    assert n_rapid.is_cooling_down()
+    n_rapid.last_attempt = datetime.datetime.now() - datetime.timedelta(seconds=6)
+    assert not n_rapid.is_cooling_down()

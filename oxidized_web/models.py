@@ -201,6 +201,7 @@ class Device(models.Model):
     password = models.CharField(max_length=128, blank=True, help_text="Override password")
     input_type = models.CharField(max_length=32, default="ssh", help_text="Input method (ssh, telnet, exec, mock)")
     output_type = models.CharField(max_length=32, default="db", help_text="Output method (db, file, git)")
+    interval = models.IntegerField(null=True, blank=True, help_text="Per-host collection interval in seconds (overrides system interval if set)")
     extra_vars = models.JSONField(default=dict, blank=True, help_text="Extra variables / credentials in JSON format")
     enabled = models.BooleanField(default=True)
 
@@ -226,8 +227,11 @@ class Device(models.Model):
         verbose_name_plural = "Devices (router.db nodes)"
         ordering = ['name']
         permissions = [
-            ("can_edit_config", "Can edit oxidized configurations and settings"),
+            ("can_view_node", "Can view node and its details"),
+            ("can_edit_node", "Can edit node parameters"),
+            ("can_delete_node", "Can delete node"),
             ("can_pull_node", "Can trigger node pull/refresh"),
+            ("can_edit_config", "Can edit oxidized configurations and settings"),
         ]
 
     def __str__(self):
@@ -262,6 +266,11 @@ class CustomModel(models.Model):
         verbose_name = "Custom Node Model"
         verbose_name_plural = "Custom Node Models"
         ordering = ['name']
+        permissions = [
+            ("can_view_model", "Can view node model"),
+            ("can_edit_model", "Can edit node model"),
+            ("can_delete_model", "Can delete node model"),
+        ]
 
     def __str__(self):
         return f"Model: {self.name}"

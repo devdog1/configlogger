@@ -1,9 +1,9 @@
 {% extends "oxidized_web/base.html" %}
 
 {% block content %}
-<!-- NetBox Breadcrumbs & Action Bar -->
+<!-- Breadcrumbs & Action Bar -->
 <div class="d-flex justify-content-between align-items-center mb-3">
-  <div class="netbox-breadcrumbs">
+  <div class="ox-breadcrumbs">
     <a href="/nodes"><i class="bi bi-house-door-fill me-1"></i>Home</a>
     <span class="sep">/</span>
     <a href="/nodes">Devices</a>
@@ -25,14 +25,14 @@
 
 {% if versions and versions|length > 1 %}
 <!-- Quick Diff Comparison Card -->
-<div class="netbox-card mb-4">
-  <div class="netbox-card-header">
-    <div class="netbox-card-header-left">
+<div class="ox-card mb-4">
+  <div class="ox-card-header">
+    <div class="ox-card-header-left">
       <i class="bi bi-gear-fill"></i>
-      <span class="netbox-card-header-title">Compare Revisions</span>
+      <span class="ox-card-header-title">Compare Revisions</span>
     </div>
   </div>
-  <div class="netbox-card-body">
+  <div class="ox-card-body">
     <form class="row g-3 align-items-center" action="/node/version/diffs" method="get">
       <input type="hidden" name="node_full" value="{{ node_name }}">
       <div class="col-md-5">
@@ -65,21 +65,21 @@
 </div>
 {% endif %}
 
-<!-- Revision Log Card (NetBox Change Log style) -->
-<div class="netbox-card">
-  <div class="netbox-card-header">
-    <div class="netbox-card-header-left">
+<!-- Revision Log Card (Unified Change Log style) -->
+<div class="ox-card">
+  <div class="ox-card-header">
+    <div class="ox-card-header-left">
       <i class="bi bi-gear-fill"></i>
-      <span class="netbox-card-header-title">Configuration History</span>
+      <span class="ox-card-header-title">Configuration History</span>
     </div>
-    <div class="netbox-card-header-actions">
+    <div class="ox-card-header-actions">
       <span>{{ versions|length }} Revisions</span>
     </div>
   </div>
 
   {% if versions %}
   <div class="table-responsive p-0">
-    <table class="netbox-table align-middle">
+    <table class="ox-table align-middle">
       <thead>
         <tr>
           <th>COMMIT ID</th>
@@ -96,7 +96,7 @@
           <td><code class="fw-bold text-primary">{{ v.oid|slice:":8" }}</code></td>
           <td>{{ v.date }}</td>
           <td><span class="badge bg-light text-dark border">{{ v.author }}</span></td>
-          <td><span class="netbox-pill netbox-pill-blue">Updated</span></td>
+          <td><span class="ox-pill ox-pill-blue">Updated</span></td>
           <td>{{ v.message }}</td>
           <td class="text-end">
             <div class="btn-group btn-group-sm">
@@ -122,7 +122,7 @@
     </table>
   </div>
   {% else %}
-  <div class="netbox-card-body text-center py-4 text-muted">
+  <div class="ox-card-body text-center py-4 text-muted">
     <i class="bi bi-clock-history fs-1 mb-2"></i>
     <p>No historical versions recorded yet for this node.</p>
   </div>

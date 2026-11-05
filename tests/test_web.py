@@ -89,6 +89,11 @@ def test_oxidized_web_views_and_api():
     assert resp.status_code == 200
     assert resp.json().get('queued') is True
 
+    # Test rapid pull prevention: immediate repeated call within cooldown returns 429
+    resp_rapid = client.get('/node/next/router-test')
+    assert resp_rapid.status_code == 429
+    assert resp_rapid.json().get('queued') is False
+
     # /reload
     resp = client.get('/reload')
     assert resp.status_code == 200

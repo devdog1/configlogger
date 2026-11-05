@@ -1,20 +1,20 @@
-/* NetBox Theme & UI Components */
+/* Oxidized Theme & UI Components */
 :root {
-  --netbox-primary: #3b5bdb;
-  --netbox-header: #3b5bdb;
-  --netbox-header-hover: #364fc7;
-  --netbox-bg: #f8fafc;
-  --netbox-sidebar-bg: #ffffff;
-  --netbox-sidebar-text: #334155;
-  --netbox-sidebar-border: #e2e8f0;
-  --netbox-card-border: #cbd5e1;
-  --netbox-pill-updated: #2563eb;
-  --netbox-pill-created: #16a34a;
-  --netbox-pill-deleted: #dc2626;
+  --ox-primary: #3b5bdb;
+  --ox-header: #3b5bdb;
+  --ox-header-hover: #364fc7;
+  --ox-bg: #f8fafc;
+  --ox-sidebar-bg: #ffffff;
+  --ox-sidebar-text: #334155;
+  --ox-sidebar-border: #e2e8f0;
+  --ox-card-border: #cbd5e1;
+  --ox-pill-updated: #2563eb;
+  --ox-pill-created: #16a34a;
+  --ox-pill-deleted: #dc2626;
 }
 
 body {
-  background-color: var(--netbox-bg);
+  background-color: var(--ox-bg);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   color: #1e293b;
   margin: 0;
@@ -23,18 +23,18 @@ body {
 }
 
 /* Layout wrapper */
-#netbox-layout {
+#ox-layout {
   display: flex;
   min-height: 100vh;
   width: 100%;
 }
 
 /* Sidebar styling */
-#netbox-sidebar {
+#ox-sidebar {
   width: 250px;
   min-width: 250px;
-  background-color: var(--netbox-sidebar-bg);
-  border-right: 1px solid var(--netbox-sidebar-border);
+  background-color: var(--ox-sidebar-bg);
+  border-right: 1px solid var(--ox-sidebar-border);
   display: flex;
   flex-direction: column;
   position: sticky;
@@ -44,17 +44,17 @@ body {
   overflow-y: auto;
 }
 
-.netbox-brand {
+.ox-brand {
   padding: 16px 20px;
   display: flex;
   align-items: center;
   gap: 12px;
-  border-bottom: 1px solid var(--netbox-sidebar-border);
+  border-bottom: 1px solid var(--ox-sidebar-border);
   text-decoration: none;
   color: #0f172a;
 }
 
-.netbox-brand-logo {
+.ox-brand-logo {
   width: 32px;
   height: 32px;
   display: flex;
@@ -62,7 +62,7 @@ body {
   justify-content: center;
 }
 
-.netbox-brand-title {
+.ox-brand-title {
   font-size: 1.25rem;
   font-weight: 700;
   color: #0f172a;
@@ -70,7 +70,7 @@ body {
   letter-spacing: -0.5px;
 }
 
-.netbox-brand-sub {
+.ox-brand-sub {
   font-size: 0.72rem;
   font-weight: 600;
   color: #2563eb;
@@ -78,58 +78,58 @@ body {
 }
 
 /* Sidebar navigation */
-.netbox-nav {
+.ox-nav {
   padding: 12px 0;
   list-style: none;
   margin: 0;
 }
 
-.netbox-nav-item {
+.ox-nav-item {
   margin-bottom: 2px;
 }
 
-.netbox-nav-link {
+.ox-nav-link {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 9px 20px;
-  color: var(--netbox-sidebar-text);
+  color: var(--ox-sidebar-text);
   text-decoration: none;
   font-size: 0.9rem;
   font-weight: 500;
   transition: background-color 0.15s ease, color 0.15s ease;
 }
 
-.netbox-nav-link:hover, .netbox-nav-link.active {
+.ox-nav-link:hover, .ox-nav-link.active {
   background-color: #f1f5f9;
   color: #1d4ed8;
 }
 
-.netbox-nav-label {
+.ox-nav-label {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.netbox-nav-label i {
+.ox-nav-label i {
   font-size: 1.05rem;
   color: #64748b;
   width: 20px;
   text-align: center;
 }
 
-.netbox-nav-link:hover .netbox-nav-label i,
-.netbox-nav-link.active .netbox-nav-label i {
+.ox-nav-link:hover .ox-nav-label i,
+.ox-nav-link.active .ox-nav-label i {
   color: #1d4ed8;
 }
 
-.netbox-nav-caret {
+.ox-nav-caret {
   font-size: 0.75rem;
   color: #94a3b8;
   transition: transform 0.2s ease;
 }
 
-.netbox-submenu {
+.ox-submenu {
   list-style: none;
   padding: 4px 0 6px 44px;
   margin: 0;
@@ -138,7 +138,7 @@ body {
   margin-left: 20px;
 }
 
-.netbox-submenu-link {
+.ox-submenu-link {
   display: block;
   padding: 6px 12px;
   color: #475569;
@@ -147,24 +147,24 @@ body {
   border-radius: 4px;
 }
 
-.netbox-submenu-link:hover, .netbox-submenu-link.active {
+.ox-submenu-link:hover, .ox-submenu-link.active {
   color: #2563eb;
   font-weight: 600;
 }
 
 /* Main Content Area */
-#netbox-main {
+#ox-main {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-width: 0;
-  background-color: var(--netbox-bg);
+  background-color: var(--ox-bg);
 }
 
 /* Top Navigation Bar */
-.netbox-topbar {
+.ox-topbar {
   background-color: #ffffff;
-  border-bottom: 1px solid var(--netbox-sidebar-border);
+  border-bottom: 1px solid var(--ox-sidebar-border);
   padding: 10px 24px;
   display: flex;
   align-items: center;
@@ -175,25 +175,25 @@ body {
   z-index: 999;
 }
 
-.netbox-search-form {
+.ox-search-form {
   max-width: 420px;
   width: 100%;
 }
 
-.netbox-search-input-group {
+.ox-search-input-group {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-.netbox-search-input-group i {
+.ox-search-input-group i {
   position: absolute;
   left: 12px;
   color: #94a3b8;
   font-size: 0.95rem;
 }
 
-.netbox-search-input {
+.ox-search-input {
   width: 100%;
   padding: 7px 12px 7px 34px;
   font-size: 0.875rem;
@@ -204,27 +204,27 @@ body {
   transition: all 0.15s ease-in-out;
 }
 
-.netbox-search-input:focus {
+.ox-search-input:focus {
   outline: none;
   border-color: #3b82f6;
   background-color: #ffffff;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
-.netbox-topbar-actions {
+.ox-topbar-actions {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
 /* Main Page Container */
-.netbox-container {
+.ox-container {
   padding: 24px;
   flex: 1;
 }
 
-/* NetBox Card Component */
-.netbox-card {
+/* Card Component */
+.ox-card {
   background-color: #ffffff;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
@@ -233,8 +233,8 @@ body {
   overflow: hidden;
 }
 
-.netbox-card-header {
-  background-color: var(--netbox-header);
+.ox-card-header {
+  background-color: var(--ox-header);
   color: #ffffff;
   padding: 9px 14px;
   display: flex;
@@ -245,27 +245,27 @@ body {
   letter-spacing: 0.2px;
 }
 
-.netbox-card-header-left {
+.ox-card-header-left {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.netbox-card-header-title {
+.ox-card-header-title {
   font-weight: 600;
   margin: 0;
   font-size: 0.95rem;
 }
 
-.netbox-card-header-actions {
+.ox-card-header-actions {
   display: flex;
   align-items: center;
   gap: 10px;
   color: rgba(255, 255, 255, 0.85);
 }
 
-.netbox-card-header-actions a,
-.netbox-card-header-actions button {
+.ox-card-header-actions a,
+.ox-card-header-actions button {
   color: #ffffff;
   opacity: 0.85;
   background: none;
@@ -274,48 +274,48 @@ body {
   cursor: pointer;
 }
 
-.netbox-card-header-actions a:hover,
-.netbox-card-header-actions button:hover {
+.ox-card-header-actions a:hover,
+.ox-card-header-actions button:hover {
   opacity: 1;
 }
 
-.netbox-card-body {
+.ox-card-body {
   padding: 16px;
 }
 
-.netbox-card-table {
+.ox-card-table {
   width: 100%;
   margin-bottom: 0;
   font-size: 0.875rem;
 }
 
-.netbox-card-table tr {
+.ox-card-table tr {
   border-bottom: 1px solid #f1f5f9;
 }
 
-.netbox-card-table tr:last-child {
+.ox-card-table tr:last-child {
   border-bottom: none;
 }
 
-.netbox-card-table td {
+.ox-card-table td {
   padding: 9px 14px;
 }
 
-.netbox-card-table td.netbox-metric-val {
+.ox-card-table td.ox-metric-val {
   text-align: right;
   font-weight: 600;
   color: #0f172a;
 }
 
-/* NetBox Table Styling */
-.netbox-table {
+/* Table Styling */
+.ox-table {
   width: 100%;
   font-size: 0.875rem;
   border-collapse: separate;
   border-spacing: 0;
 }
 
-.netbox-table thead th {
+.ox-table thead th {
   background-color: #f8fafc;
   color: #475569;
   font-weight: 600;
@@ -326,18 +326,18 @@ body {
   border-bottom: 2px solid #e2e8f0;
 }
 
-.netbox-table tbody td {
+.ox-table tbody td {
   padding: 10px 14px;
   border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
 }
 
-.netbox-table tbody tr:hover {
+.ox-table tbody tr:hover {
   background-color: #f8fafc;
 }
 
 /* Badges / Status Pills */
-.netbox-pill {
+.ox-pill {
   display: inline-block;
   padding: 3px 10px;
   font-size: 0.75rem;
@@ -347,34 +347,34 @@ body {
   white-space: nowrap;
 }
 
-.netbox-pill-updated, .netbox-pill-blue {
+.ox-pill-updated, .ox-pill-blue {
   background-color: #2563eb;
   color: #ffffff;
 }
 
-.netbox-pill-created, .netbox-pill-green {
+.ox-pill-created, .ox-pill-green {
   background-color: #16a34a;
   color: #ffffff;
 }
 
-.netbox-pill-danger, .netbox-pill-red {
+.ox-pill-danger, .ox-pill-red {
   background-color: #dc2626;
   color: #ffffff;
 }
 
-.netbox-pill-gray {
+.ox-pill-gray {
   background-color: #64748b;
   color: #ffffff;
 }
 
-.netbox-pill-light {
+.ox-pill-light {
   background-color: #f1f5f9;
   color: #334155;
   border: 1px solid #cbd5e1;
 }
 
 /* Breadcrumbs */
-.netbox-breadcrumbs {
+.ox-breadcrumbs {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -382,16 +382,16 @@ body {
   margin-bottom: 16px;
 }
 
-.netbox-breadcrumbs a {
+.ox-breadcrumbs a {
   color: #2563eb;
   text-decoration: none;
 }
 
-.netbox-breadcrumbs a:hover {
+.ox-breadcrumbs a:hover {
   text-decoration: underline;
 }
 
-.netbox-breadcrumbs span.sep {
+.ox-breadcrumbs span.sep {
   color: #94a3b8;
 }
 
