@@ -204,11 +204,12 @@ class Device(models.Model):
     extra_vars = models.JSONField(default=dict, blank=True, help_text="Extra variables / credentials in JSON format")
     enabled = models.BooleanField(default=True)
 
-    # Advanced SSH Options per host (Kex, HostKey, Ciphers)
+    # Advanced SSH Options per host (Kex, HostKey, Ciphers, Legacy SSH-RSA)
     ssh_kex = models.CharField(max_length=255, blank=True, default="", help_text="Override KexAlgorithms, e.g. +diffie-hellman-group14-sha1 or diffie-hellman-group1-sha1")
     ssh_hostkey = models.CharField(max_length=255, blank=True, default="", help_text="Override HostKeyAlgorithms, e.g. +ssh-rsa,rsa-sha2-512")
     ssh_ciphers = models.CharField(max_length=255, blank=True, default="", help_text="Override Ciphers, e.g. +aes128-cbc,aes256-cbc")
     ssh_clear_hostkey = models.BooleanField(default=False, help_text="Ignore / clear held hostkey verification errors (AutoAddPolicy)")
+    ssh_legacy_rsa = models.BooleanField(default=False, help_text="Force legacy SSH-RSA by disabling rsa-sha2-256 and rsa-sha2-512 algorithms")
 
     # Runtime Status Tracking
     last_status = models.CharField(max_length=32, default="never", help_text="Last backup status (success, fail, no_connection, never)")

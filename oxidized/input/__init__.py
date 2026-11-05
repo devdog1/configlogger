@@ -107,11 +107,16 @@ class SSHInput(Input):
         port = node.vars.get('ssh_port', 22)
         timeout = node.timeout or 20
 
-        # Build custom transport or options based on per-host SSH Kex, HostKey, Ciphers
+        # Build custom transport or options based on per-host SSH Kex, HostKey, Ciphers, and Legacy SSH-RSA
         ssh_kex = node.vars.get('ssh_kex') or getattr(node, 'ssh_kex', None)
         ssh_hostkey = node.vars.get('ssh_hostkey') or getattr(node, 'ssh_hostkey', None)
         ssh_ciphers = node.vars.get('ssh_ciphers') or getattr(node, 'ssh_ciphers', None)
         clear_hostkey = node.vars.get('ssh_clear_hostkey') or getattr(node, 'ssh_clear_hostkey', False)
+        legacy_rsa = (
+            node.vars.get('ssh_legacy_rsa')
+            or getattr(node, 'ssh_legacy_rsa', False)
+            or node.vars.get('legacy_rsa', False)
+        )
 
         def _parse_algos(val, default_list):
             if not val:
@@ -151,20 +156,39 @@ class SSHInput(Input):
             self.client.get_host_keys().clear()
 
         logger.debug(
-            "Initiating SSH connection to %s (%s:%s) with timeout=%ss, kex=%s, hostkey=%s, ciphers=%s",
-            node.name, node.ip, port, timeout, ssh_kex or 'default', ssh_hostkey or 'default', ssh_ciphers or 'default'
+            "Initiating SSH connection to %s (%s:%s) with timeout=%ss, kex=%s, hostkey=%s, ciphers=%s, legacy_rsa=%s",
+            node.name, node.ip, port, timeout, ssh_kex or 'default', ssh_hostkey or 'default', ssh_ciphers or 'default', legacy_rsa
         )
+
+        disabled_algorithms = None
+        if legacy_rsa:
+            disabled_algorithms = {
+                "keys": [
+                    "rsa-sha2-256",
+                    "rsa-sha2-512"
+                ],
+                "pubkeys": [
+                    "rsa-sha2-256",
+                    "rsa-sha2-512"
+                ]
+            }
+
+        connect_kwargs = {
+            'hostname': node.ip,
+            'port': port,
+            'username': username,
+            'password': password,
+            'timeout': timeout,
+            'look_for_keys': False,
+            'allow_agent': False,
+        }
+        if disabled_algorithms:
+            connect_kwargs['disabled_algorithms'] = disabled_algorithms
 
         try:
             self.client.connect(
-                hostname=node.ip,
-                port=port,
-                username=username,
-                password=password,
-                timeout=timeout,
-                look_for_keys=False,
-                allow_agent=False,
-                transport_factory=NodeCustomTransport if (ssh_kex or ssh_hostkey or ssh_ciphers) else None
+                transport_factory=NodeCustomTransport if (ssh_kex or ssh_hostkey or ssh_ciphers) else None,
+                **connect_kwargs
             )
             logger.debug("SSH connection successfully established to %s (%s)", node.name, node.ip)
             return True

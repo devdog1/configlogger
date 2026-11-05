@@ -1,21 +1,65 @@
 {% extends "oxidized_web/base.html" %}
 
 {% block content %}
-<div class="row">
-  <div class="col-12">
-    <h4>Search Results for "{{ query }}"</h4>
-    <hr>
+<!-- NetBox Breadcrumbs & Action Bar -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div class="netbox-breadcrumbs">
+    <a href="/nodes"><i class="bi bi-house-door-fill me-1"></i>Home</a>
+    <span class="sep">/</span>
+    <a href="/nodes/conf_search">Configurations</a>
+    <span class="sep">/</span>
+    <span class="text-secondary fw-semibold">Search Results</span>
+  </div>
+
+  <div class="d-flex gap-2">
+    <a class="btn btn-sm btn-outline-secondary" href="/nodes">
+      <i class="bi bi-arrow-left me-1"></i>Back to Nodes
+    </a>
+  </div>
+</div>
+
+<div class="netbox-card">
+  <div class="netbox-card-header">
+    <div class="netbox-card-header-left">
+      <i class="bi bi-gear-fill"></i>
+      <span class="netbox-card-header-title">Config Search: "{{ query }}"</span>
+    </div>
+    <div class="netbox-card-header-actions">
+      <span>{{ matches|length }} Results</span>
+    </div>
+  </div>
+
+  <div class="netbox-card-body">
     {% if matches %}
-      <div class="list-group">
-        {% for match in matches %}
-          <div class="list-group-item">
-            <h5><a href="/node/show/{{ match.node }}">{{ match.node }}</a></h5>
-            <pre class="bg-body-secondary p-2"><code>{{ match.line }}</code></pre>
-          </div>
-        {% endfor %}
+      <div class="table-responsive">
+        <table class="netbox-table align-middle">
+          <thead>
+            <tr>
+              <th style="width: 25%;">DEVICE</th>
+              <th>MATCHING CONFIGURATION LINE</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for match in matches %}
+            <tr>
+              <td>
+                <a href="/node/show/{{ match.node }}" class="fw-semibold text-primary text-decoration-none">
+                  <i class="bi bi-hdd-network me-1 text-secondary"></i>{{ match.node }}
+                </a>
+              </td>
+              <td>
+                <pre class="mb-0 p-2 bg-light border rounded"><code>{{ match.line }}</code></pre>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
     {% else %}
-      <p>No matching lines found.</p>
+      <div class="text-center py-4 text-muted">
+        <i class="bi bi-search fs-1 mb-2"></i>
+        <p>No matching configuration lines found for query <code>{{ query }}</code>.</p>
+      </div>
     {% endif %}
   </div>
 </div>

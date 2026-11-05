@@ -152,8 +152,8 @@ class DeviceAdmin(admin.ModelAdmin):
             'fields': ('username', 'password', 'input_type', 'output_type')
         }),
         ('SSH Algorithm Overrides & Options', {
-            'fields': ('ssh_kex', 'ssh_hostkey', 'ssh_ciphers', 'ssh_clear_hostkey'),
-            'description': 'Configure per-host KexAlgorithms (+diffie-hellman-group14-sha1), HostKeyAlgorithms (+ssh-rsa), Ciphers (+aes128-cbc), or clear held signature verification keys.'
+            'fields': ('ssh_kex', 'ssh_hostkey', 'ssh_ciphers', 'ssh_clear_hostkey', 'ssh_legacy_rsa'),
+            'description': 'Configure per-host KexAlgorithms (+diffie-hellman-group14-sha1), HostKeyAlgorithms (+ssh-rsa), Ciphers (+aes128-cbc), clear held signature verification keys, or force legacy SSH-RSA by disabling rsa-sha2-256 and rsa-sha2-512.'
         }),
         ('Advanced Variables', {
             'fields': ('extra_vars',)

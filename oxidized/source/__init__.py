@@ -119,6 +119,8 @@ class DjangoSource(Source):
                     merged_vars['ssh_ciphers'] = dev.ssh_ciphers
                 if dev.ssh_clear_hostkey:
                     merged_vars['ssh_clear_hostkey'] = True
+                if dev.ssh_legacy_rsa:
+                    merged_vars['ssh_legacy_rsa'] = True
 
                 nodes.append({
                     'name': dev.name,
@@ -134,6 +136,7 @@ class DjangoSource(Source):
                     'ssh_hostkey': dev.ssh_hostkey,
                     'ssh_ciphers': dev.ssh_ciphers,
                     'ssh_clear_hostkey': dev.ssh_clear_hostkey,
+                    'ssh_legacy_rsa': dev.ssh_legacy_rsa,
                     'status': dev.last_status,
                     'last_error': dev.last_error,
                     'attempts': dev.attempts,

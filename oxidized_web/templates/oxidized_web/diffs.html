@@ -1,63 +1,73 @@
 {% extends "oxidized_web/base.html" %}
 
 {% block content %}
-<div class="row">
-  <div class="col-12">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h4><i class="bi bi-file-diff me-2"></i>Diff Comparison: {{ node_name }}</h4>
-      <div>
-        <a class="btn btn-outline-secondary" href="/node/version?node_full={{ node_name }}"><i class="bi bi-clock-history"></i> Revision History</a>
-        <a class="btn btn-primary" href="/node/fetch/{{ node_name }}"><i class="bi bi-cloud-download"></i> Current Config</a>
-      </div>
-    </div>
-    <hr>
+<!-- NetBox Breadcrumbs & Action Bar -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div class="netbox-breadcrumbs">
+    <a href="/nodes"><i class="bi bi-house-door-fill me-1"></i>Home</a>
+    <span class="sep">/</span>
+    <a href="/nodes">Devices</a>
+    <span class="sep">/</span>
+    <a href="/node/show/{{ node_name }}">{{ node_name }}</a>
+    <span class="sep">/</span>
+    <span class="text-secondary fw-semibold">Diff Comparison</span>
+  </div>
 
-    <div class="card mb-3 shadow-sm">
-      <div class="card-header bg-body-tertiary d-flex justify-content-between align-items-center">
-        <div>
-          <span class="badge bg-danger me-2"><i class="bi bi-dash-circle me-1"></i>From: {{ oid1|slice:":8"|default:"Base" }}</span>
-          <i class="bi bi-arrow-right mx-2 text-muted"></i>
-          <span class="badge bg-success"><i class="bi bi-plus-circle me-1"></i>To: {{ oid2|slice:":8"|default:"Current" }}</span>
-        </div>
-        <div class="small text-muted">
-          Unified Git Diff View
-        </div>
-      </div>
-      <div class="card-body p-0">
-        {% if diff_lines %}
-          <div class="diff-container" style="font-family: monospace; font-size: 0.9rem; line-height: 1.5; overflow-x: auto; background-color: var(--bs-body-bg);">
-            <table class="table table-sm table-borderless mb-0">
-              <tbody>
-                {% for item in diff_lines %}
-                  <tr style="{% if item.type == 'add' %}background-color: rgba(40, 167, 69, 0.15); color: #155724;{% elif item.type == 'del' %}background-color: rgba(220, 53, 69, 0.15); color: #721c24;{% elif item.type == 'header' %}background-color: rgba(108, 117, 125, 0.1); font-weight: bold; color: #004085;{% endif %}">
-                    <td class="text-end text-muted pe-3 user-select-none" style="width: 45px; border-right: 1px solid var(--bs-border-color);">
-                      {{ item.line_num|default:"" }}
-                    </td>
-                    <td class="ps-3" style="white-space: pre-wrap; word-break: break-all;">
-                      {% if item.type == 'add' %}
-                        <span class="fw-bold text-success me-2">+</span>{{ item.text }}
-                      {% elif item.type == 'del' %}
-                        <span class="fw-bold text-danger me-2">-</span>{{ item.text }}
-                      {% elif item.type == 'header' %}
-                        <span class="text-primary me-2">@</span>{{ item.text }}
-                      {% else %}
-                        <span class="text-muted me-2">&nbsp;</span>{{ item.text }}
-                      {% endif %}
-                    </td>
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-        {% else %}
-          <div class="p-4 text-center text-muted">
-            <i class="bi bi-check2-circle fs-3 text-success d-block mb-2"></i>
-            No configuration differences between these two revisions.
-          </div>
-        {% endif %}
-      </div>
-    </div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-sm btn-outline-secondary" href="/node/version?node_full={{ node_name }}">
+      <i class="bi bi-clock-history me-1"></i>All Revisions
+    </a>
+    <a class="btn btn-sm btn-primary" href="/node/fetch/{{ node_name }}">
+      <i class="bi bi-file-earmark-text me-1"></i>Current Config
+    </a>
+  </div>
+</div>
 
+<div class="netbox-card">
+  <div class="netbox-card-header">
+    <div class="netbox-card-header-left">
+      <i class="bi bi-gear-fill"></i>
+      <span class="netbox-card-header-title">Diff Comparison: {{ node_name }}</span>
+    </div>
+    <div class="netbox-card-header-actions">
+      <span class="badge bg-light text-danger border me-1"><i class="bi bi-dash-circle me-1"></i>{{ oid1|slice:":8"|default:"Base" }}</span>
+      <i class="bi bi-arrow-right text-white-50"></i>
+      <span class="badge bg-light text-success border ms-1"><i class="bi bi-plus-circle me-1"></i>{{ oid2|slice:":8"|default:"Target" }}</span>
+    </div>
+  </div>
+
+  <div class="netbox-card-body p-0">
+    {% if diff_lines %}
+      <div class="diff-container" style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.85rem; line-height: 1.5; overflow-x: auto; background-color: #ffffff;">
+        <table class="table table-sm table-borderless mb-0">
+          <tbody>
+            {% for item in diff_lines %}
+              <tr style="{% if item.type == 'add' %}background-color: #dcfce7; color: #166534;{% elif item.type == 'del' %}background-color: #fee2e2; color: #991b1b;{% elif item.type == 'header' %}background-color: #f1f5f9; font-weight: bold; color: #1e40af;{% endif %}">
+                <td class="text-end text-muted pe-3 user-select-none" style="width: 45px; border-right: 1px solid #e2e8f0;">
+                  {{ item.line_num|default:"" }}
+                </td>
+                <td class="ps-3" style="white-space: pre-wrap; word-break: break-all;">
+                  {% if item.type == 'add' %}
+                    <span class="fw-bold text-success me-2">+</span>{{ item.text }}
+                  {% elif item.type == 'del' %}
+                    <span class="fw-bold text-danger me-2">-</span>{{ item.text }}
+                  {% elif item.type == 'header' %}
+                    <span class="text-primary me-2">@</span>{{ item.text }}
+                  {% else %}
+                    <span class="text-muted me-2">&nbsp;</span>{{ item.text }}
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="p-4 text-center text-muted">
+        <i class="bi bi-check2-circle fs-3 text-success d-block mb-2"></i>
+        No configuration differences between these two revisions.
+      </div>
+    {% endif %}
   </div>
 </div>
 {% endblock %}

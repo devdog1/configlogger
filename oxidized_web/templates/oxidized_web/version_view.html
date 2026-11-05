@@ -1,12 +1,43 @@
 {% extends "oxidized_web/base.html" %}
 
 {% block content %}
-<div class="row">
-  <div class="col-12">
-    <h4>Version View: {{ node_name }} {% if oid %}({{ oid|slice:":8" }}){% endif %}</h4>
-    <hr>
-    <a class="btn btn-secondary mb-3" href="/node/version?node_full={{ node_name }}">Back to Versions</a>
-    <pre class="bg-body-secondary p-3 border rounded"><code>{{ content }}</code></pre>
+<!-- NetBox Breadcrumbs & Action Bar -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div class="netbox-breadcrumbs">
+    <a href="/nodes"><i class="bi bi-house-door-fill me-1"></i>Home</a>
+    <span class="sep">/</span>
+    <a href="/nodes">Devices</a>
+    <span class="sep">/</span>
+    <a href="/node/show/{{ node_name }}">{{ node_name }}</a>
+    <span class="sep">/</span>
+    <a href="/node/version?node_full={{ node_name }}">Revisions</a>
+    <span class="sep">/</span>
+    <span class="text-secondary fw-semibold">{{ oid|slice:":8"|default:"View" }}</span>
+  </div>
+
+  <div class="d-flex gap-2">
+    <a class="btn btn-sm btn-outline-secondary" href="/node/version?node_full={{ node_name }}">
+      <i class="bi bi-arrow-left me-1"></i>Back to Revisions
+    </a>
+    <a class="btn btn-sm btn-primary" href="/node/fetch/{{ node_name }}">
+      <i class="bi bi-file-earmark-text me-1"></i>Current Live Config
+    </a>
+  </div>
+</div>
+
+<div class="netbox-card">
+  <div class="netbox-card-header">
+    <div class="netbox-card-header-left">
+      <i class="bi bi-gear-fill"></i>
+      <span class="netbox-card-header-title">Config Snapshot: {{ node_name }} ({{ oid|slice:":8"|default:"Latest" }})</span>
+    </div>
+    <div class="netbox-card-header-actions">
+      <code>{{ oid|default:"latest" }}</code>
+    </div>
+  </div>
+
+  <div class="netbox-card-body p-0">
+    <pre class="m-0 p-3 bg-light border-0" style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.85rem; max-height: 75vh; overflow-y: auto;"><code>{{ content }}</code></pre>
   </div>
 </div>
 {% endblock %}
