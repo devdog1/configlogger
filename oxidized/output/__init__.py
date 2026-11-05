@@ -155,10 +155,14 @@ class DatabaseOutput(Output):
 class FileOutput(Output):
     def __init__(self, cfg=None):
         super().__init__(cfg)
-        self.directory = os.path.expanduser(self.cfg.get('directory', '~/.config/oxidized/configs'))
-        os.makedirs(self.directory, exist_ok=True)
+        raw_dir = self.cfg.get('directory') or '~/.config/oxidized/configs'
+        self.directory = os.path.expanduser(raw_dir)
+        if self.directory:
+            os.makedirs(self.directory, exist_ok=True)
 
     def _get_path(self, node_name, group=None):
+        if not self.directory:
+            return None
         if group and group != 'default':
             dir_path = os.path.join(self.directory, group)
         else:
@@ -173,22 +177,24 @@ class FileOutput(Output):
         group = opt.get('group')
         path = self._get_path(node_name, group)
         content = outputs.to_cfg() if hasattr(outputs, 'to_cfg') else str(outputs)
-        with open(path, 'w', encoding='utf-8') as f:
-            f.write(content)
+        if path:
+            with open(path, 'w', encoding='utf-8') as f:
+                f.write(content)
         # Always mirror revision into local PostgreSQL DB
         _save_pg_revision(node_name, group, content, message=opt.get('msg') or f"update {node_name}")
-        return path
+        return path or "db"
 
     def fetch(self, node_name, group=None):
         path = self._get_path(node_name, group)
-        if os.path.exists(path):
+        if path and os.path.exists(path):
             with open(path, 'r', encoding='utf-8') as f:
                 return f.read()
 
-        matches = glob.glob(os.path.join(self.directory, '**', node_name), recursive=True)
-        if matches and os.path.isfile(matches[0]):
-            with open(matches[0], 'r', encoding='utf-8') as f:
-                return f.read()
+        if self.directory and os.path.exists(self.directory):
+            matches = glob.glob(os.path.join(self.directory, '**', node_name), recursive=True)
+            if matches and os.path.isfile(matches[0]):
+                with open(matches[0], 'r', encoding='utf-8') as f:
+                    return f.read()
         return _get_pg_version_content(node_name, group)
 
     def version(self, node_name, group=None):
@@ -206,14 +212,19 @@ class FileOutput(Output):
 class GitOutput(Output):
     def __init__(self, cfg=None):
         super().__init__(cfg)
-        self.repo_path = os.path.expanduser(self.cfg.get('repo', '~/.config/oxidized/oxidized.git'))
+        raw_repo = self.cfg.get('repo') or '~/.config/oxidized/oxidized.git'
+        self.repo_path = os.path.expanduser(raw_repo)
         self.user = self.cfg.get('user', 'Oxidized')
         self.email = self.cfg.get('email', 'o@example.com')
-        self._ensure_repo()
+        self.repo = None
+        if self.repo_path:
+            self._ensure_repo()
 
     def _ensure_repo(self):
         from dulwich import porcelain
         from dulwich.repo import Repo
+        if not self.repo_path:
+            return
         os.makedirs(self.repo_path, exist_ok=True)
         try:
             self.repo = Repo(self.repo_path)
@@ -323,5 +334,5 @@ OUTPUT_REGISTRY = {
 
 def resolve_output(name, cfg=None):
     norm_name = str(name).strip().lower()
-    cls = OUTPUT_REGISTRY.get(norm_name, FileOutput)
+    cls = OUTPUT_REGISTRY.get(norm_name, DatabaseOutput)
     return cls(cfg)

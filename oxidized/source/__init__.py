@@ -95,6 +95,18 @@ class DjangoSource(Source):
         if node_want:
             dev_qs = dev_qs.filter(name=node_want)
 
+        dev_dict = {dev.name: dev for dev in dev_qs}
+
+        # Populate runtime status onto any CSV/router.db defined nodes if device exists
+        for n in nodes:
+            dev = dev_dict.get(n['name'])
+            if dev:
+                n['status'] = dev.last_status
+                n['last_error'] = dev.last_error
+                n['attempts'] = dev.attempts
+                n['time'] = dev.last_update.strftime("%Y-%m-%d %H:%M:%S") if dev.last_update else 'never'
+                n['mtime'] = dev.last_changed.strftime("%Y-%m-%d %H:%M:%S") if dev.last_changed else 'never'
+
         existing_names = {n['name'] for n in nodes}
         for dev in dev_qs:
             if dev.name not in existing_names:
@@ -106,8 +118,13 @@ class DjangoSource(Source):
                     'username': dev.username,
                     'password': dev.password,
                     'input': dev.input_type or 'ssh',
-                    'output': dev.output_type or 'file',
+                    'output': dev.output_type or 'db',
                     'vars': dev.extra_vars or {},
+                    'status': dev.last_status,
+                    'last_error': dev.last_error,
+                    'attempts': dev.attempts,
+                    'time': dev.last_update.strftime("%Y-%m-%d %H:%M:%S") if dev.last_update else 'never',
+                    'mtime': dev.last_changed.strftime("%Y-%m-%d %H:%M:%S") if dev.last_changed else 'never',
                 })
 
         return nodes

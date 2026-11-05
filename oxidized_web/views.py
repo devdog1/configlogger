@@ -61,6 +61,14 @@ def nodes_list(request, filter_type=None, filter_value=None):
     if filter_type and filter_value:
         data = [n for n in data if n.get(filter_type) == filter_value]
 
+    # Cross-reference with NodeRevision if mtime is still 'never'
+    from oxidized_web.models import NodeRevision
+    for n in data:
+        if n.get('mtime') == 'never':
+            latest_rev = NodeRevision.objects.filter(node_name=n['name']).order_by('-created_at').first()
+            if latest_rev:
+                n['mtime'] = latest_rev.created_at.strftime("%Y-%m-%d %H:%M:%S")
+
     if request.path.endswith('.json') or request.GET.get('format') == 'json':
         return JsonResponse(data, safe=False)
 
@@ -90,6 +98,12 @@ def node_view(request, node_name=None, node=None):
     if 'vars' in node_data and isinstance(node_data['vars'], dict):
         node_data['vars'] = {k: ('<hidden>' if 'pass' in k.lower() or 'secret' in k.lower() else v) for k, v in node_data['vars'].items()}
 
+    if node_data.get('mtime') == 'never':
+        from oxidized_web.models import NodeRevision
+        latest_rev = NodeRevision.objects.filter(node_name=node_data['name']).order_by('-created_at').first()
+        if latest_rev:
+            node_data['mtime'] = latest_rev.created_at.strftime("%Y-%m-%d %H:%M:%S")
+
     if request.path.endswith('.json') or request.GET.get('format') == 'json':
         return JsonResponse(node_data)
 
@@ -107,7 +121,7 @@ def node_fetch(request, node_name=None, group=None, node=None):
         return HttpResponseForbidden("You do not have permission to view configs for this node group.")
 
     content = n.output.fetch(n.name, group=n.group)
-    if content is None:
+    if not content:
         content = f"# Configuration not yet gathered for {node_name}"
 
     if request.path.endswith('.json') or request.GET.get('format') == 'json':

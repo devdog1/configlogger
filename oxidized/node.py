@@ -56,10 +56,12 @@ class Node:
         self.stats = NodeStats()
         self.running = False
         self.last = None
-        self.attempts = 0
-        self.last_error = None
+        self.attempts = opt.get('attempts', 0)
+        self.last_error = opt.get('last_error') or None
         self.nexted = False
-        self.last_modified = None
+        self.last_modified = opt.get('mtime') if opt.get('mtime') != 'never' else None
+        self.initial_status = opt.get('status') or 'never'
+        self.initial_time = opt.get('time') or 'never'
 
     def _resolve_ip(self, ip_str):
         if '/' in ip_str:
@@ -128,18 +130,53 @@ class Node:
 
         if status == 'success':
             self.last_modified = end_time.strftime("%Y-%m-%d %H:%M:%S")
+
+        self._persist_status_to_db(status, start_time, end_time)
         return status == 'success'
 
+    def _persist_status_to_db(self, status, start_time, end_time):
+        """Persist node execution status and timestamps to PostgreSQL database."""
+        try:
+            import django
+            from django.apps import apps
+            if apps.ready:
+                from django.utils import timezone
+                from oxidized_web.models import Device
+                device, created = Device.objects.get_or_create(
+                    name=self.name,
+                    defaults={
+                        'ip': self.ip,
+                        'model': self.model_name,
+                        'group': self.group or 'default',
+                        'output_type': 'db',
+                    }
+                )
+                device.last_status = status
+                device.last_error = self.last_error or ""
+                device.attempts = self.attempts
+                device.last_update = timezone.now()
+                if status == 'success':
+                    device.last_changed = timezone.now()
+                device.save(update_fields=['last_status', 'last_error', 'attempts', 'last_update', 'last_changed'])
+        except Exception as e:
+            logger.debug("Could not persist status to DB for %s: %s", self.name, e)
+
     def to_dict(self):
+        status = self.last['status'] if self.last else getattr(self, 'initial_status', 'never')
+        time_val = (self.last['end'].strftime("%Y-%m-%d %H:%M:%S")
+                    if self.last and self.last.get('end')
+                    else getattr(self, 'initial_time', 'never'))
+        mtime_val = self.last_modified or 'never'
+
         return {
             'name': self.name,
             'ip': self.ip,
             'model': self.model_name,
             'group': self.group,
-            'status': self.last['status'] if self.last else 'never',
-            'time': self.last['end'].strftime("%Y-%m-%d %H:%M:%S") if self.last and self.last.get('end') else 'never',
+            'status': status,
+            'time': time_val,
             'last': self.last,
-            'mtime': self.last_modified or 'never',
+            'mtime': mtime_val,
             'attempts': self.attempts,
             'last_error': self.last_error,
             'history': self.stats.history,

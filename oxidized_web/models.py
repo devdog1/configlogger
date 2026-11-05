@@ -35,11 +35,11 @@ class OxidizedSetting(models.Model):
     input_utf8_encoded = models.BooleanField(default=True)
 
     # Output Settings
-    output_default = models.CharField(max_length=64, default='git', help_text="Default output mechanism (file, git)")
-    output_file_directory = models.CharField(max_length=255, default='~/.config/oxidized/configs', blank=True)
+    output_default = models.CharField(max_length=64, default='db', help_text="Default output mechanism (db, file, git)")
+    output_file_directory = models.CharField(max_length=255, default='', blank=True, help_text="Optional local file output directory")
     output_git_user = models.CharField(max_length=128, default='Oxidized', blank=True)
     output_git_email = models.CharField(max_length=128, default='o@example.com', blank=True)
-    output_git_repo = models.CharField(max_length=255, default='~/.config/oxidized/oxidized.git', blank=True)
+    output_git_repo = models.CharField(max_length=255, default='', blank=True, help_text="Optional git repository path")
     output_git_single_repo = models.BooleanField(default=True)
 
     # Source Settings
@@ -200,9 +200,17 @@ class Device(models.Model):
     username = models.CharField(max_length=128, blank=True, help_text="Override username")
     password = models.CharField(max_length=128, blank=True, help_text="Override password")
     input_type = models.CharField(max_length=32, default="ssh", help_text="Input method (ssh, telnet, exec, mock)")
-    output_type = models.CharField(max_length=32, default="file", help_text="Output method (file, git)")
+    output_type = models.CharField(max_length=32, default="db", help_text="Output method (db, file, git)")
     extra_vars = models.JSONField(default=dict, blank=True, help_text="Extra variables / credentials in JSON format")
     enabled = models.BooleanField(default=True)
+
+    # Runtime Status Tracking
+    last_status = models.CharField(max_length=32, default="never", help_text="Last backup status (success, fail, no_connection, never)")
+    last_error = models.TextField(blank=True, default="", help_text="Last error or failure reason")
+    attempts = models.IntegerField(default=0, help_text="Number of attempts during last backup")
+    last_update = models.DateTimeField(null=True, blank=True, help_text="Timestamp of last backup run attempt")
+    last_changed = models.DateTimeField(null=True, blank=True, help_text="Timestamp when config last changed")
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
