@@ -32,4 +32,15 @@ urlpatterns = [
     path('node/version/view', views.node_version_view, name='node_version_view'),
     path('node/version/view.json', views.node_version_view, name='node_version_view_json'),
     path('node/version/diffs', views.node_version_diffs, name='node_version_diffs'),
+
+    # User Configuration Pages (Outside of Django Admin)
+    path('devices', views.device_list_view, name='device_list_view'),
+    path('devices/add', views.device_create_view, name='device_create_view'),
+    path('devices/<int:pk>/edit', views.device_edit_view, name='device_edit_view'),
+    path('devices/<int:pk>/delete', views.device_delete_view, name='device_delete_view'),
+
+    path('models', views.model_list_view, name='model_list_view'),
+    path('models/add', views.model_create_view, name='model_create_view'),
+    path('models/<int:pk>/edit', views.model_edit_view, name='model_edit_view'),
+    path('models/<int:pk>/delete', views.model_delete_view, name='model_delete_view'),
 ]

@@ -1,0 +1,125 @@
+{% extends "oxidized_web/base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div class="ox-breadcrumbs">
+    <a href="/nodes"><i class="bi bi-house-door-fill me-1"></i>Home</a>
+    <span class="sep">/</span>
+    <a href="{% url 'device_list_view' %}">Devices</a>
+    <span class="sep">/</span>
+    <span class="text-secondary fw-semibold">{{ title }}</span>
+  </div>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-lg-9">
+    <div class="ox-card">
+      <div class="ox-card-header">
+        <div class="ox-card-header-left">
+          <i class="bi bi-hdd-network-fill"></i>
+          <span class="ox-card-header-title">{{ title }}</span>
+        </div>
+      </div>
+      <div class="ox-card-body p-4">
+        <form method="post">
+          {% csrf_token %}
+
+          {% if form.errors %}
+          <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>Please correct the errors below.
+            {{ form.errors }}
+          </div>
+          {% endif %}
+
+          <h6 class="text-uppercase text-secondary fw-bold mb-3 border-bottom pb-2">Device Identification</h6>
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Device Name (Hostname)</label>
+              {{ form.name }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">IP Address / FQDN</label>
+              {{ form.ip }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">OS Model</label>
+              {{ form.model }}
+              <div class="form-text">Choose from 195 built-in and custom OS models.</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Group</label>
+              {{ form.group }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Collection Interval (Seconds)</label>
+              {{ form.interval }}
+              <div class="form-text">Leave blank to use system interval.</div>
+            </div>
+            <div class="col-md-6 d-flex align-items-center mt-4">
+              <div class="form-check form-switch mt-2">
+                {{ form.enabled }}
+                <label class="form-check-label fw-semibold ms-2">Enabled for Backup</label>
+              </div>
+            </div>
+          </div>
+
+          <h6 class="text-uppercase text-secondary fw-bold mb-3 border-bottom pb-2">Authentication & Drivers</h6>
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Username Override</label>
+              {{ form.username }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Password Override</label>
+              {{ form.password }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Input Mechanism</label>
+              {{ form.input_type }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Output Destination</label>
+              {{ form.output_type }}
+            </div>
+          </div>
+
+          <h6 class="text-uppercase text-secondary fw-bold mb-3 border-bottom pb-2">SSH Cryptography & Host Keys</h6>
+          <div class="row g-3 mb-4">
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">KEX Algorithms</label>
+              {{ form.ssh_kex }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">HostKey Algorithms</label>
+              {{ form.ssh_hostkey }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Ciphers</label>
+              {{ form.ssh_ciphers }}
+            </div>
+            <div class="col-md-6">
+              <div class="form-check">
+                {{ form.ssh_legacy_rsa }}
+                <label class="form-check-label fw-semibold ms-2">Force Legacy SSH-RSA (disable rsa-sha2-256 & 512)</label>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-check">
+                {{ form.ssh_clear_hostkey }}
+                <label class="form-check-label fw-semibold ms-2">Clear Held Hostkey Verification</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between pt-3 border-top">
+            <a class="btn btn-outline-secondary" href="{% url 'device_list_view' %}">Cancel</a>
+            <button type="submit" class="btn btn-primary px-4">
+              <i class="bi bi-check-lg me-1"></i>{{ action }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

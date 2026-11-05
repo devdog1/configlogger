@@ -45,7 +45,7 @@
       </a>
 
       <ul class="ox-nav">
-        <!-- Devices Menu -->
+        <!-- Devices & Inventory Menu -->
         <li class="ox-nav-item">
           <a class="ox-nav-link" data-bs-toggle="collapse" href="#menu-devices" role="button" aria-expanded="true">
             <span class="ox-nav-label">
@@ -56,14 +56,31 @@
           </a>
           <div class="collapse show" id="menu-devices">
             <ul class="ox-submenu">
-              <li><a href="/nodes" class="ox-submenu-link">Device Inventory</a></li>
-              <li><a href="/admin/oxidized_web/device/" target="_blank" class="ox-submenu-link">Add Device (router.db)</a></li>
-              <li><a href="/admin/oxidized_web/custommodel/" target="_blank" class="ox-submenu-link">OS Models (195)</a></li>
+              <li><a href="/nodes" class="ox-submenu-link">Device Dashboard</a></li>
+              <li><a href="{% url 'device_list_view' %}" class="ox-submenu-link">Device Configuration</a></li>
+              <li><a href="{% url 'device_create_view' %}" class="ox-submenu-link">Add Device</a></li>
             </ul>
           </div>
         </li>
 
-        <!-- Configuration Menu -->
+        <!-- OS Models Menu -->
+        <li class="ox-nav-item">
+          <a class="ox-nav-link" data-bs-toggle="collapse" href="#menu-models" role="button" aria-expanded="true">
+            <span class="ox-nav-label">
+              <i class="bi bi-cpu"></i>
+              <span>OS Models</span>
+            </span>
+            <i class="bi bi-chevron-down ox-nav-caret"></i>
+          </a>
+          <div class="collapse show" id="menu-models">
+            <ul class="ox-submenu">
+              <li><a href="{% url 'model_list_view' %}" class="ox-submenu-link">Model Configuration</a></li>
+              <li><a href="{% url 'model_create_view' %}" class="ox-submenu-link">Add OS Model</a></li>
+            </ul>
+          </div>
+        </li>
+
+        <!-- Configuration & Search Menu -->
         <li class="ox-nav-item">
           <a class="ox-nav-link" data-bs-toggle="collapse" href="#menu-config" role="button" aria-expanded="true">
             <span class="ox-nav-label">
@@ -75,8 +92,6 @@
           <div class="collapse show" id="menu-config">
             <ul class="ox-submenu">
               <li><a href="/nodes/conf_search" class="ox-submenu-link">Config Search</a></li>
-              <li><a href="/nodes" target="_blank" class="ox-submenu-link">Revisions & Diffs</a></li>
-              <li><a href="/admin/oxidized_web/oxidizedsetting/" target="_blank" class="ox-submenu-link">Oxidized Settings</a></li>
             </ul>
           </div>
         </li>
@@ -96,34 +111,6 @@
               <li><a href="/reload" class="ox-submenu-link">Reload Inventory</a></li>
             </ul>
           </div>
-        </li>
-
-        <!-- IPAM / Routing Section -->
-        <li class="ox-nav-item">
-          <a class="ox-nav-link" data-bs-toggle="collapse" href="#menu-ipam" role="button" aria-expanded="false">
-            <span class="ox-nav-label">
-              <i class="bi bi-diagram-3"></i>
-              <span>IPAM & Routing</span>
-            </span>
-            <i class="bi bi-chevron-down ox-nav-caret"></i>
-          </a>
-          <div class="collapse" id="menu-ipam">
-            <ul class="ox-submenu">
-              <li><a href="/nodes" class="ox-submenu-link">IP Addresses</a></li>
-              <li><a href="/nodes" class="ox-submenu-link">Device Groups</a></li>
-            </ul>
-          </div>
-        </li>
-
-        <!-- Admin -->
-        <li class="ox-nav-item">
-          <a class="ox-nav-link" href="/admin/" target="_blank">
-            <span class="ox-nav-label">
-              <i class="bi bi-person-gear"></i>
-              <span>Admin</span>
-            </span>
-            <i class="bi bi-box-arrow-up-right ox-nav-caret"></i>
-          </a>
         </li>
       </ul>
     </aside>

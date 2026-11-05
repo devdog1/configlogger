@@ -337,3 +337,223 @@ def node_version_diffs(request):
     })
 
 node_show = node_view
+
+# ==============================================================================
+# Main User Configuration Views (Devices / Nodes and OS Models)
+# Outside of Django Admin Section
+# ==============================================================================
+from oxidized_web.models import Device, CustomModel
+from django import forms
+from django.shortcuts import get_object_or_404
+from django.contrib import messages
+
+class UserDeviceForm(forms.ModelForm):
+    password = forms.CharField(
+        widget=forms.PasswordInput(render_value=False),
+        required=False,
+        help_text="Override password (leave blank to keep current password)"
+    )
+
+    class Meta:
+        model = Device
+        fields = [
+            'name', 'ip', 'model', 'group', 'enabled', 'interval',
+            'username', 'password', 'input_type', 'output_type',
+            'ssh_kex', 'ssh_hostkey', 'ssh_ciphers', 'ssh_clear_hostkey', 'ssh_legacy_rsa',
+            'extra_vars'
+        ]
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'ip': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Optional IP or hostname'}),
+            'group': forms.TextInput(attrs={'class': 'form-control'}),
+            'interval': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Seconds (leave empty for system interval)'}),
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'input_type': forms.Select(choices=[('ssh', 'SSH'), ('telnet', 'Telnet'), ('exec', 'Exec'), ('mock', 'Mock')], attrs={'class': 'form-select'}),
+            'output_type': forms.Select(choices=[('db', 'Database (PostgreSQL)'), ('git', 'Git'), ('file', 'File')], attrs={'class': 'form-select'}),
+            'ssh_kex': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+diffie-hellman-group14-sha1'}),
+            'ssh_hostkey': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+ssh-rsa'}),
+            'ssh_ciphers': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+aes128-cbc'}),
+            'ssh_clear_hostkey': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'ssh_legacy_rsa': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'enabled': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        choices = []
+        seen = set()
+        for cm in CustomModel.objects.filter(enabled=True).order_by('name'):
+            label = f"{cm.description or cm.name.capitalize()} ({cm.name})"
+            choices.append((cm.name, label))
+            seen.add(cm.name)
+        for p in ['ios', 'junos', 'eos']:
+            if p not in seen:
+                choices.insert(0, (p, f"{p.upper()} ({p})"))
+
+        self.fields['model'] = forms.ChoiceField(
+            choices=choices,
+            widget=forms.Select(attrs={'class': 'form-select'}),
+            help_text="Select device OS model from dropdown"
+        )
+
+    def clean_password(self):
+        password = self.cleaned_data.get('password')
+        if not password and self.instance and self.instance.pk:
+            return self.instance.password
+        return password
+
+
+class UserModelForm(forms.ModelForm):
+    class Meta:
+        model = CustomModel
+        fields = ['name', 'description', 'prompt_regex', 'comment_prefix', 'commands', 'clean_filters', 'code_snippet', 'enabled']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.TextInput(attrs={'class': 'form-control'}),
+            'prompt_regex': forms.TextInput(attrs={'class': 'form-control'}),
+            'comment_prefix': forms.TextInput(attrs={'class': 'form-control'}),
+            'code_snippet': forms.Textarea(attrs={'class': 'form-control font-monospace', 'rows': 4}),
+            'enabled': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+
+@login_required(login_url='/admin/login/')
+def device_list_view(request):
+    if not can_user_view_node(request.user):
+        return HttpResponseForbidden("You do not have permission to view devices.")
+
+    devices = Device.objects.all().order_by('name')
+    if not (request.user.is_superuser or request.user.is_staff):
+        devices = [d for d in devices if can_user_access_group(request.user, d.group)]
+
+    return render(request, 'oxidized_web/devices.html', {
+        'devices': devices,
+        'can_edit': can_user_edit_node(request.user),
+        'can_delete': can_user_delete_node(request.user),
+    })
+
+
+@login_required(login_url='/admin/login/')
+def device_create_view(request):
+    if not can_user_edit_node(request.user):
+        return HttpResponseForbidden("You do not have permission to add devices.")
+
+    if request.method == 'POST':
+        form = UserDeviceForm(request.POST)
+        if form.is_valid():
+            dev = form.save()
+            get_nodes(force_reload=True)
+            return redirect('device_list_view')
+    else:
+        form = UserDeviceForm()
+
+    return render(request, 'oxidized_web/device_form.html', {
+        'form': form,
+        'title': 'Add Network Device',
+        'action': 'Create',
+    })
+
+
+@login_required(login_url='/admin/login/')
+def device_edit_view(request, pk):
+    dev = get_object_or_404(Device, pk=pk)
+    if not can_user_edit_node(request.user) or not can_user_access_group(request.user, dev.group):
+        return HttpResponseForbidden("You do not have permission to edit this device.")
+
+    if request.method == 'POST':
+        form = UserDeviceForm(request.POST, instance=dev)
+        if form.is_valid():
+            form.save()
+            get_nodes(force_reload=True)
+            return redirect('device_list_view')
+    else:
+        form = UserDeviceForm(instance=dev)
+
+    return render(request, 'oxidized_web/device_form.html', {
+        'form': form,
+        'device': dev,
+        'title': f'Edit Device: {dev.name}',
+        'action': 'Save Changes',
+    })
+
+
+@login_required(login_url='/admin/login/')
+def device_delete_view(request, pk):
+    dev = get_object_or_404(Device, pk=pk)
+    if not can_user_delete_node(request.user) or not can_user_access_group(request.user, dev.group):
+        return HttpResponseForbidden("You do not have permission to delete this device.")
+
+    if request.method == 'POST':
+        dev.delete()
+        get_nodes(force_reload=True)
+        return redirect('device_list_view')
+
+    return render(request, 'oxidized_web/device_confirm_delete.html', {'device': dev})
+
+
+@login_required(login_url='/admin/login/')
+def model_list_view(request):
+    if not can_user_view_model(request.user):
+        return HttpResponseForbidden("You do not have permission to view models.")
+
+    models = CustomModel.objects.all().order_by('name')
+    return render(request, 'oxidized_web/models.html', {
+        'models': models,
+        'can_edit': can_user_edit_model(request.user),
+        'can_delete': can_user_delete_model(request.user),
+    })
+
+
+@login_required(login_url='/admin/login/')
+def model_create_view(request):
+    if not can_user_edit_model(request.user):
+        return HttpResponseForbidden("You do not have permission to create models.")
+
+    if request.method == 'POST':
+        form = UserModelForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('model_list_view')
+    else:
+        form = UserModelForm(initial={'commands': ['show version', 'show running-config']})
+
+    return render(request, 'oxidized_web/model_form.html', {
+        'form': form,
+        'title': 'Add OS Model',
+        'action': 'Create',
+    })
+
+
+@login_required(login_url='/admin/login/')
+def model_edit_view(request, pk):
+    model_obj = get_object_or_404(CustomModel, pk=pk)
+    if not can_user_edit_model(request.user):
+        return HttpResponseForbidden("You do not have permission to edit models.")
+
+    if request.method == 'POST':
+        form = UserModelForm(request.POST, instance=model_obj)
+        if form.is_valid():
+            form.save()
+            return redirect('model_list_view')
+    else:
+        form = UserModelForm(instance=model_obj)
+
+    return render(request, 'oxidized_web/model_form.html', {
+        'form': form,
+        'model_obj': model_obj,
+        'title': f'Edit Model: {model_obj.name}',
+        'action': 'Save Changes',
+    })
+
+
+@login_required(login_url='/admin/login/')
+def model_delete_view(request, pk):
+    model_obj = get_object_or_404(CustomModel, pk=pk)
+    if not can_user_delete_model(request.user):
+        return HttpResponseForbidden("You do not have permission to delete models.")
+
+    if request.method == 'POST':
+        model_obj.delete()
+        return redirect('model_list_view')
+
+    return render(request, 'oxidized_web/model_confirm_delete.html', {'model_obj': model_obj})

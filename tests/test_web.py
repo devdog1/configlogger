@@ -147,3 +147,65 @@ def test_revision_control_and_git_diff_view():
         assert b'Diff Comparison' in resp_diff.content
     finally:
         shutil.rmtree(tmp_git, ignore_errors=True)
+
+@pytest.mark.django_db
+def test_user_device_and_model_pages():
+    admin_user = User.objects.create_superuser('user_mgmt', 'user_mgmt@test.com', 'adminpass')
+    client = Client()
+    client.force_login(admin_user)
+
+    # 1. Device list
+    resp = client.get('/devices')
+    assert resp.status_code == 200
+    assert b'Configured Devices' in resp.content
+
+    # 2. Add device
+    resp_create = client.post('/devices/add', {
+        'name': 'sw-user-new',
+        'ip': '192.168.99.1',
+        'model': 'ios',
+        'group': 'default',
+        'input_type': 'ssh',
+        'output_type': 'db',
+        'interval': 300,
+        'enabled': True,
+    })
+    assert resp_create.status_code == 302
+    assert Device.objects.filter(name='sw-user-new').exists()
+    dev = Device.objects.get(name='sw-user-new')
+    assert dev.interval == 300
+
+    # 3. Edit device
+    resp_edit = client.post(f'/devices/{dev.pk}/edit', {
+        'name': 'sw-user-new',
+        'ip': '192.168.99.2',
+        'model': 'ios',
+        'group': 'branch',
+        'input_type': 'ssh',
+        'output_type': 'db',
+        'interval': 600,
+        'enabled': True,
+    })
+    assert resp_edit.status_code == 302
+    dev.refresh_from_db()
+    assert dev.ip == '192.168.99.2'
+    assert dev.group == 'branch'
+    assert dev.interval == 600
+
+    # 4. Model list
+    resp_models = client.get('/models')
+    assert resp_models.status_code == 200
+    assert b'Supported OS Models' in resp_models.content
+
+    # 5. Add custom model
+    resp_model_create = client.post('/models/add', {
+        'name': 'custom_switch_os',
+        'description': 'Custom Switch Platform',
+        'prompt_regex': r'^[a-z0-9]+#',
+        'comment_prefix': '! ',
+        'commands': '["show system", "show config"]',
+        'clean_filters': '[]',
+        'enabled': True,
+    })
+    assert resp_model_create.status_code == 302
+    assert CustomModel.objects.filter(name='custom_switch_os').exists()

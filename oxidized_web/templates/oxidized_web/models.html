@@ -1,0 +1,96 @@
+{% extends "oxidized_web/base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div class="ox-breadcrumbs">
+    <a href="/nodes"><i class="bi bi-house-door-fill me-1"></i>Home</a>
+    <span class="sep">/</span>
+    <span class="text-secondary fw-semibold">OS Models & Parser Configuration</span>
+  </div>
+
+  <div class="d-flex gap-2">
+    {% if can_edit %}
+    <a class="btn btn-sm btn-primary" href="{% url 'model_create_view' %}">
+      <i class="bi bi-plus-lg me-1"></i>Add OS Model
+    </a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="ox-card">
+  <div class="ox-card-header">
+    <div class="ox-card-header-left">
+      <i class="bi bi-cpu-fill"></i>
+      <span class="ox-card-header-title">Supported OS Models</span>
+    </div>
+    <div class="ox-card-header-actions">
+      <span>{{ models|length }} Models</span>
+    </div>
+  </div>
+
+  <div class="table-responsive p-0">
+    <table class="ox-table align-middle" id="modelsTable">
+      <thead>
+        <tr>
+          <th>MODEL IDENTIFIER</th>
+          <th>DESCRIPTION</th>
+          <th>PROMPT REGEX</th>
+          <th>COMMENT PREFIX</th>
+          <th>COMMAND COUNT</th>
+          <th>ENABLED</th>
+          <th class="text-end">ACTIONS</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in models %}
+        <tr>
+          <td>
+            <a href="{% url 'nodes_model' m.name %}" class="fw-semibold text-primary text-decoration-none">
+              <code>{{ m.name }}</code>
+            </a>
+          </td>
+          <td>{{ m.description|default:"—" }}</td>
+          <td><code class="text-dark small">{{ m.prompt_regex }}</code></td>
+          <td><code>{{ m.comment_prefix }}</code></td>
+          <td><span class="badge bg-light text-dark border">{{ m.commands|length }} cmds</span></td>
+          <td>
+            {% if m.enabled %}
+              <span class="ox-pill ox-pill-green">Active</span>
+            {% else %}
+              <span class="ox-pill ox-pill-gray">Disabled</span>
+            {% endif %}
+          </td>
+          <td class="text-end">
+            <div class="btn-group btn-group-sm">
+              <a class="btn btn-outline-primary" title="Filter Nodes" href="{% url 'nodes_model' m.name %}">
+                <i class="bi bi-filter"></i>
+              </a>
+              {% if can_edit %}
+              <a class="btn btn-outline-secondary" title="Edit Model" href="{% url 'model_edit_view' m.pk %}">
+                <i class="bi bi-pencil"></i>
+              </a>
+              {% endif %}
+              {% if can_delete %}
+              <a class="btn btn-outline-danger" title="Delete Model" href="{% url 'model_delete_view' m.pk %}">
+                <i class="bi bi-trash"></i>
+              </a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  $(function() {
+    $('#modelsTable').DataTable({
+      autoWidth: false,
+      dom: '<"p-3 d-flex justify-content-between align-items-center"lf>rt<"p-3 d-flex justify-content-between align-items-center"ip>',
+      order: [[0, 'asc']]
+    });
+  });
+</script>
+{% endblock %}

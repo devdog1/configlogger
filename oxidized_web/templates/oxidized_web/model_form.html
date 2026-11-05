@@ -1,0 +1,86 @@
+{% extends "oxidized_web/base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div class="ox-breadcrumbs">
+    <a href="/nodes"><i class="bi bi-house-door-fill me-1"></i>Home</a>
+    <span class="sep">/</span>
+    <a href="{% url 'model_list_view' %}">OS Models</a>
+    <span class="sep">/</span>
+    <span class="text-secondary fw-semibold">{{ title }}</span>
+  </div>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="ox-card">
+      <div class="ox-card-header">
+        <div class="ox-card-header-left">
+          <i class="bi bi-cpu-fill"></i>
+          <span class="ox-card-header-title">{{ title }}</span>
+        </div>
+      </div>
+      <div class="ox-card-body p-4">
+        <form method="post">
+          {% csrf_token %}
+
+          {% if form.errors %}
+          <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>Please correct the errors below.
+            {{ form.errors }}
+          </div>
+          {% endif %}
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Model Name (Identifier)</label>
+              {{ form.name }}
+              <div class="form-text">e.g. <code>ios</code>, <code>junos</code>, <code>routeros</code></div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Description</label>
+              {{ form.description }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Prompt Regex</label>
+              {{ form.prompt_regex }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Comment Prefix</label>
+              {{ form.comment_prefix }}
+              <div class="form-text">Prefix for generated header comments (e.g. <code>! </code> or <code># </code>).</div>
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold">Commands (JSON List)</label>
+              {{ form.commands }}
+              <div class="form-text">e.g. <code>["show version", "show running-config"]</code></div>
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold">Clean Filters (JSON Regex Replacement Pairs)</label>
+              {{ form.clean_filters }}
+              <div class="form-text">e.g. <code>[["password \\S+", "password <secret hidden>"]]</code></div>
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold">Custom Python Logic (Snippet)</label>
+              {{ form.code_snippet }}
+            </div>
+            <div class="col-12">
+              <div class="form-check form-switch">
+                {{ form.enabled }}
+                <label class="form-check-label fw-semibold ms-2">Model Enabled</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between pt-3 border-top">
+            <a class="btn btn-outline-secondary" href="{% url 'model_list_view' %}">Cancel</a>
+            <button type="submit" class="btn btn-primary px-4">
+              <i class="bi bi-check-lg me-1"></i>{{ action }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
