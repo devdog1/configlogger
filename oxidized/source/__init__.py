@@ -110,6 +110,16 @@ class DjangoSource(Source):
         existing_names = {n['name'] for n in nodes}
         for dev in dev_qs:
             if dev.name not in existing_names:
+                merged_vars = dict(dev.extra_vars or {})
+                if dev.ssh_kex:
+                    merged_vars['ssh_kex'] = dev.ssh_kex
+                if dev.ssh_hostkey:
+                    merged_vars['ssh_hostkey'] = dev.ssh_hostkey
+                if dev.ssh_ciphers:
+                    merged_vars['ssh_ciphers'] = dev.ssh_ciphers
+                if dev.ssh_clear_hostkey:
+                    merged_vars['ssh_clear_hostkey'] = True
+
                 nodes.append({
                     'name': dev.name,
                     'ip': dev.ip or dev.name,
@@ -119,7 +129,11 @@ class DjangoSource(Source):
                     'password': dev.password,
                     'input': dev.input_type or 'ssh',
                     'output': dev.output_type or 'db',
-                    'vars': dev.extra_vars or {},
+                    'vars': merged_vars,
+                    'ssh_kex': dev.ssh_kex,
+                    'ssh_hostkey': dev.ssh_hostkey,
+                    'ssh_ciphers': dev.ssh_ciphers,
+                    'ssh_clear_hostkey': dev.ssh_clear_hostkey,
                     'status': dev.last_status,
                     'last_error': dev.last_error,
                     'attempts': dev.attempts,

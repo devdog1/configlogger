@@ -23,12 +23,22 @@
           <div class="card-body">
             <table class="table table-borderless table-sm mb-0">
               <tr><th style="width: 35%;">IP / Hostname:</th><td>{{ node.ip }}</td></tr>
-              <tr><th>Model:</th><td><span class="badge text-bg-secondary">{{ node.model_name }}</span></td></tr>
+              <tr><th>Model:</th><td><span class="badge text-bg-secondary">{{ node.model_name|default:node.model }}</span></td></tr>
               <tr><th>Group:</th><td><span class="badge text-bg-info">{{ node.group }}</span></td></tr>
-              <tr><th>Input Driver:</th><td>{{ node.input_class.name }}</td></tr>
-              <tr><th>Output Destination:</th><td>{{ node.output|default:"PostgreSQL & File" }}</td></tr>
+              <tr><th>Input Driver:</th><td><span class="badge text-bg-dark">{{ node.input_driver|default:node.input|default:"ssh" }}</span></td></tr>
+              <tr><th>Output Destination:</th><td>{{ node.output|default:"PostgreSQL (db)" }}</td></tr>
               <tr><th>Timeout / Retries:</th><td>{{ node.timeout }}s / {{ node.retries }} retries</td></tr>
             </table>
+
+            {% if node.ssh_kex or node.ssh_hostkey or node.ssh_ciphers %}
+            <hr class="my-2">
+            <h6 class="text-muted small mb-2"><i class="bi bi-shield-lock me-1"></i>Custom SSH Cryptography Options</h6>
+            <div class="small">
+              {% if node.ssh_kex %}<div><strong>KexAlgorithms:</strong> <code>{{ node.ssh_kex }}</code></div>{% endif %}
+              {% if node.ssh_hostkey %}<div><strong>HostKeyAlgorithms:</strong> <code>{{ node.ssh_hostkey }}</code></div>{% endif %}
+              {% if node.ssh_ciphers %}<div><strong>Ciphers:</strong> <code>{{ node.ssh_ciphers }}</code></div>{% endif %}
+            </div>
+            {% endif %}
           </div>
         </div>
       </div>

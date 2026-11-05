@@ -107,8 +107,49 @@ class SSHInput(Input):
         port = node.vars.get('ssh_port', 22)
         timeout = node.timeout or 20
 
+        # Build custom transport or options based on per-host SSH Kex, HostKey, Ciphers
+        ssh_kex = node.vars.get('ssh_kex') or getattr(node, 'ssh_kex', None)
+        ssh_hostkey = node.vars.get('ssh_hostkey') or getattr(node, 'ssh_hostkey', None)
+        ssh_ciphers = node.vars.get('ssh_ciphers') or getattr(node, 'ssh_ciphers', None)
+        clear_hostkey = node.vars.get('ssh_clear_hostkey') or getattr(node, 'ssh_clear_hostkey', False)
+
+        def _parse_algos(val, default_list):
+            if not val:
+                return default_list
+            items = [x.strip() for x in str(val).split(',') if x.strip()]
+            res = list(default_list)
+            for it in items:
+                if it.startswith('+'):
+                    algo = it[1:].strip()
+                    if algo not in res:
+                        res.insert(0, algo)
+                elif it.startswith('-'):
+                    algo = it[1:].strip()
+                    if algo in res:
+                        res.remove(algo)
+                else:
+                    if it not in res:
+                        res.insert(0, it)
+            return tuple(res)
+
+        class NodeCustomTransport(paramiko.Transport):
+            def __init__(self, sock, **kwargs):
+                super().__init__(sock, **kwargs)
+                sec = self.get_security_options()
+                if ssh_kex:
+                    sec.kex = _parse_algos(ssh_kex, sec.kex)
+                if ssh_hostkey:
+                    sec.key_types = _parse_algos(ssh_hostkey, sec.key_types)
+                if ssh_ciphers:
+                    sec.ciphers = _parse_algos(ssh_ciphers, sec.ciphers)
+
         self.client = paramiko.SSHClient()
         self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+        # If clear_hostkey is set or default, ensure known host keys don't reject on change
+        if clear_hostkey:
+            self.client.get_host_keys().clear()
+
         try:
             self.client.connect(
                 hostname=node.ip,
@@ -117,7 +158,8 @@ class SSHInput(Input):
                 password=password,
                 timeout=timeout,
                 look_for_keys=False,
-                allow_agent=False
+                allow_agent=False,
+                transport_factory=NodeCustomTransport if (ssh_kex or ssh_hostkey or ssh_ciphers) else None
             )
             return True
         except Exception as e:

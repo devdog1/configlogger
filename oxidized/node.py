@@ -168,11 +168,21 @@ class Node:
                     else getattr(self, 'initial_time', 'never'))
         mtime_val = self.last_modified or 'never'
 
+        input_driver_name = getattr(self.input, 'name', 'ssh') if hasattr(self, 'input') else 'ssh'
+        output_name = getattr(self.opt, 'get', lambda k, d=None: d)('output', 'db')
+
         return {
             'name': self.name,
             'ip': self.ip,
             'model': self.model_name,
+            'model_name': self.model_name,
             'group': self.group,
+            'input': input_driver_name,
+            'input_driver': input_driver_name,
+            'output': output_name,
+            'output_type': output_name,
+            'timeout': self.timeout,
+            'retries': self.retries,
             'status': status,
             'time': time_val,
             'last': self.last,
@@ -180,4 +190,7 @@ class Node:
             'attempts': self.attempts,
             'last_error': self.last_error,
             'history': self.stats.history,
+            'ssh_kex': self.opt.get('ssh_kex', ''),
+            'ssh_hostkey': self.opt.get('ssh_hostkey', ''),
+            'ssh_ciphers': self.opt.get('ssh_ciphers', ''),
         }

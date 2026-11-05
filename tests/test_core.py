@@ -190,3 +190,34 @@ def test_postgresql_node_revision_storage():
 
     diff = _get_pg_diff("test-db-node", "default", oid1, oid2)
     assert "+ ip address 172.16.0.1" in diff
+
+@pytest.mark.django_db
+def test_ssh_crypto_options_and_transport():
+    from oxidized.input import SSHInput
+    node_data = {
+        'name': 'test-crypto-node',
+        'ip': '127.0.0.1',
+        'model': 'ios',
+        'group': 'core',
+        'input': 'ssh',
+        'output': 'db',
+        'ssh_kex': '+diffie-hellman-group14-sha1',
+        'ssh_hostkey': '+ssh-rsa',
+        'ssh_ciphers': '+aes128-cbc',
+        'ssh_clear_hostkey': True,
+        'vars': {
+            'ssh_kex': '+diffie-hellman-group14-sha1',
+            'ssh_hostkey': '+ssh-rsa',
+            'ssh_ciphers': '+aes128-cbc',
+            'ssh_clear_hostkey': True
+        }
+    }
+    node = Node(node_data)
+    d = node.to_dict()
+    assert d['ssh_kex'] == '+diffie-hellman-group14-sha1'
+    assert d['ssh_hostkey'] == '+ssh-rsa'
+    assert d['ssh_ciphers'] == '+aes128-cbc'
+    assert d['input_driver'] == 'ssh'
+    assert d['model'] == 'ios'
+    assert d['timeout'] == node.timeout
+    assert d['retries'] == node.retries

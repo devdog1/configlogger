@@ -151,6 +151,10 @@ class DeviceAdmin(admin.ModelAdmin):
         ('Authentication & Driver', {
             'fields': ('username', 'password', 'input_type', 'output_type')
         }),
+        ('SSH Algorithm Overrides & Options', {
+            'fields': ('ssh_kex', 'ssh_hostkey', 'ssh_ciphers', 'ssh_clear_hostkey'),
+            'description': 'Configure per-host KexAlgorithms (+diffie-hellman-group14-sha1), HostKeyAlgorithms (+ssh-rsa), Ciphers (+aes128-cbc), or clear held signature verification keys.'
+        }),
         ('Advanced Variables', {
             'fields': ('extra_vars',)
         }),
