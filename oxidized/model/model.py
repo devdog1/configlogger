@@ -145,6 +145,17 @@ class Model(metaclass=ModelMeta):
     def get(self):
         """Execute all commands and assemble outputs."""
         outputs = ModelOutputs()
+
+        # If using CLI/Exec input and no commands are registered in model (or cli_cmd provides the entire config):
+        if getattr(self.input, 'name', '') in ('cli', 'exec') and (not self._cmds['cmd'] or getattr(self.node, 'cli_cmd', None)):
+            # If a cli_cmd template is defined or commands are empty, run the cli input directly
+            if not self._cmds['cmd']:
+                out = self.execute_cmd("")
+                if out is False:
+                    return False
+                if out:
+                    outputs.append(out)
+
         for cmd_entry in self._cmds['cmd']:
             command = cmd_entry['cmd']
             args = cmd_entry.get('args', {})

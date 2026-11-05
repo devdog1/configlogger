@@ -44,9 +44,12 @@ class Node:
         self.vars = dict(Config.current().vars or {})
         self.vars.update(opt.get('vars') or {})
 
+        self.cli_cmd = opt.get('cli_cmd') or self.vars.get('cli_cmd') or None
+
         input_type = opt.get('input') or Config.current().input.default.split(',')[0].strip()
         self.input_class = resolve_input(input_type)
         self.input = self.input_class(cfg=Config.current().input)
+        self.input.node = self
 
         output_type = opt.get('output') or Config.current().output.default
         self.output = resolve_output(output_type, cfg=getattr(Config.current().output, output_type, {}))
@@ -263,6 +266,7 @@ class Node:
             'attempts': self.attempts,
             'last_error': self.last_error,
             'history': self.stats.history,
+            'cli_cmd': getattr(self, 'cli_cmd', '') or '',
             'ssh_kex': self.opt.get('ssh_kex', ''),
             'ssh_hostkey': self.opt.get('ssh_hostkey', ''),
             'ssh_ciphers': self.opt.get('ssh_ciphers', ''),

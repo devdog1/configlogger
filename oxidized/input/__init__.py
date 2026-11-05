@@ -256,6 +256,11 @@ class TelnetInput(Input):
 
 
 class ExecInput(Input):
+    """
+    Executes external Linux executables/commands outside of Python.
+    Supports interpolating variables into the command string (e.g. {host}, {username}, {password}, etc.)
+    and passing them as environment variables (OXIDIZED_HOST, OXIDIZED_USER, OXIDIZED_PASSWORD, etc.).
+    """
     name = "exec"
 
     def __init__(self, cfg=None):
@@ -266,27 +271,114 @@ class ExecInput(Input):
         self.node = node
         return True
 
+    def _get_context(self, command=None):
+        """Prepare interpolation variables and environment variables from node context."""
+        if not self.node:
+            return {}, {}
+
+        username = (self.node.auth.get('username') or '') if self.node.auth else ''
+        password = (self.node.auth.get('password') or '') if self.node.auth else ''
+        host = self.node.ip or self.node.name
+        port = str(self.node.vars.get('port') or self.node.vars.get('ssh_port') or 22)
+
+        context = {
+            'host': host,
+            'ip': self.node.ip,
+            'name': self.node.name,
+            'username': username,
+            'user': username,
+            'password': password,
+            'pass': password,
+            'model': self.node.model_name,
+            'group': self.node.group or 'default',
+            'port': port,
+            'command': command or '',
+            'cmd': command or '',
+        }
+
+        # Add node vars
+        for k, v in getattr(self.node, 'vars', {}).items():
+            if k not in context:
+                context[k] = str(v)
+
+        # Build environment variables with OXIDIZED_ prefix
+        import os
+        env = os.environ.copy()
+        env['OXIDIZED_HOST'] = host
+        env['OXIDIZED_IP'] = str(self.node.ip)
+        env['OXIDIZED_NAME'] = str(self.node.name)
+        env['OXIDIZED_USER'] = str(username)
+        env['OXIDIZED_USERNAME'] = str(username)
+        env['OXIDIZED_PASSWORD'] = str(password)
+        env['OXIDIZED_MODEL'] = str(self.node.model_name)
+        env['OXIDIZED_GROUP'] = str(self.node.group or 'default')
+        env['OXIDIZED_PORT'] = port
+        if command:
+            env['OXIDIZED_CMD'] = str(command)
+            env['OXIDIZED_COMMAND'] = str(command)
+
+        for k, v in getattr(self.node, 'vars', {}).items():
+            env[f"OXIDIZED_VAR_{k.upper()}"] = str(v)
+
+        return context, env
+
+    def interpolate_cmd(self, cmd_template, command=None):
+        context, _ = self._get_context(command)
+        # Safe string formatting; if a key is missing, leave it as is
+        class SafeDict(dict):
+            def __missing__(self, key):
+                return '{' + key + '}'
+        try:
+            return cmd_template.format_map(SafeDict(context))
+        except Exception:
+            return cmd_template
+
     def cmd(self, command):
         import subprocess
+        context, env = self._get_context(command)
+
+        # Check if node or input cfg has a custom cli command template
+        template = (
+            getattr(self.node, 'cli_cmd', None)
+            or (self.node.vars.get('cli_cmd') if self.node else None)
+            or (self.cfg.get('cmd') if isinstance(self.cfg, dict) else None)
+        )
+
+        if template:
+            exec_command = self.interpolate_cmd(template, command)
+        else:
+            exec_command = self.interpolate_cmd(command, command)
+
+        timeout_val = getattr(self.node, 'timeout', 30) if self.node else 30
         try:
+            logger.debug("Executing external command: %s", exec_command)
             res = subprocess.run(
-                command,
+                exec_command,
                 shell=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
-                timeout=self.node.timeout or 30
+                env=env,
+                timeout=timeout_val or 30
             )
+            if res.returncode != 0:
+                logger.warning("Exec command '%s' exited with code %s: %s", exec_command, res.returncode, res.stderr)
             return res.stdout
         except Exception as e:
-            logger.error("Exec command failed on %s: %s", self.node.name, e)
+            logger.error("Exec command failed on %s: %s", getattr(self.node, 'name', 'node') if self.node else "node", e)
             return False
+
+
+class CLIInput(ExecInput):
+    """Alias for ExecInput specifically for CLI / external Linux executables."""
+    name = "cli"
 
 
 INPUT_REGISTRY = {
     'ssh': SSHInput,
     'telnet': TelnetInput,
     'exec': ExecInput,
+    'cli': CLIInput,
     'mock': MockInput,
 }
 

@@ -358,7 +358,7 @@ class UserDeviceForm(forms.ModelForm):
         model = Device
         fields = [
             'name', 'ip', 'model', 'group', 'enabled', 'interval',
-            'username', 'password', 'input_type', 'output_type',
+            'username', 'password', 'input_type', 'cli_cmd', 'output_type',
             'ssh_kex', 'ssh_hostkey', 'ssh_ciphers', 'ssh_clear_hostkey', 'ssh_legacy_rsa',
             'extra_vars'
         ]
@@ -368,7 +368,8 @@ class UserDeviceForm(forms.ModelForm):
             'group': forms.TextInput(attrs={'class': 'form-control'}),
             'interval': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Seconds (leave empty for system interval)'}),
             'username': forms.TextInput(attrs={'class': 'form-control'}),
-            'input_type': forms.Select(choices=[('ssh', 'SSH'), ('telnet', 'Telnet'), ('exec', 'Exec'), ('mock', 'Mock')], attrs={'class': 'form-select'}),
+            'input_type': forms.Select(choices=[('ssh', 'SSH'), ('telnet', 'Telnet'), ('cli', 'CLI / Linux Command'), ('exec', 'Exec'), ('mock', 'Mock')], attrs={'class': 'form-select'}),
+            'cli_cmd': forms.TextInput(attrs={'class': 'form-control', 'placeholder': "e.g. sshpass -p '{password}' ssh {user}@{host} cat /etc/config"}),
             'output_type': forms.Select(choices=[('db', 'Database (PostgreSQL)'), ('git', 'Git'), ('file', 'File')], attrs={'class': 'form-select'}),
             'ssh_kex': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+diffie-hellman-group14-sha1'}),
             'ssh_hostkey': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+ssh-rsa'}),

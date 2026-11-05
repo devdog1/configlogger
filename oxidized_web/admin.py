@@ -93,10 +93,11 @@ class OxidizedSettingAdmin(admin.ModelAdmin):
         ('Input Driver Configuration', {
             'fields': (
                 'input_default',
+                'input_cli_cmd',
                 ('input_debug', 'input_ssh_secure'),
                 ('input_ftp_passive', 'input_utf8_encoded'),
             ),
-            'description': 'Configure SSH, Telnet, and other input parameters.'
+            'description': 'Configure SSH, Telnet, CLI command templates, and other input parameters.'
         }),
         ('Output Driver Configuration', {
             'fields': (
@@ -153,7 +154,7 @@ class DeviceAdmin(admin.ModelAdmin):
             'description': 'Per-host collection interval in seconds (leave blank to use system interval).'
         }),
         ('Authentication & Driver', {
-            'fields': ('username', 'password', 'input_type', 'output_type')
+            'fields': ('username', 'password', 'input_type', 'cli_cmd', 'output_type')
         }),
         ('SSH Algorithm Overrides & Options', {
             'fields': ('ssh_kex', 'ssh_hostkey', 'ssh_ciphers', 'ssh_clear_hostkey', 'ssh_legacy_rsa'),

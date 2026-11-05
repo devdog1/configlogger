@@ -38,6 +38,7 @@
           <th>GROUP</th>
           <th>INTERVAL (SEC)</th>
           <th>INPUT</th>
+          <th>CLI COMMAND</th>
           <th>OUTPUT</th>
           <th>ENABLED</th>
           <th class="text-end">ACTIONS</th>
@@ -62,6 +63,13 @@
             {% endif %}
           </td>
           <td><span class="badge bg-secondary">{{ dev.input_type }}</span></td>
+          <td>
+            {% if dev.cli_cmd %}
+              <code class="small text-truncate d-inline-block" style="max-width: 180px;" title="{{ dev.cli_cmd }}">{{ dev.cli_cmd }}</code>
+            {% else %}
+              <span class="text-muted small">—</span>
+            {% endif %}
+          </td>
           <td><span class="badge bg-secondary">{{ dev.output_type }}</span></td>
           <td>
             {% if dev.enabled %}

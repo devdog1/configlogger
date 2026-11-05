@@ -81,6 +81,11 @@
               <label class="form-label fw-semibold">Output Destination</label>
               {{ form.output_type }}
             </div>
+            <div class="col-md-12">
+              <label class="form-label fw-semibold">CLI / External Linux Executable Command Template</label>
+              {{ form.cli_cmd }}
+              <div class="form-text">When using CLI / Exec input mode, specify command or Linux executable path. Available variables: <code>{host}</code>, <code>{ip}</code>, <code>{username}</code>, <code>{password}</code>, <code>{model}</code>, <code>{group}</code>, <code>{port}</code>. Also exported to process environment as <code>$OXIDIZED_HOST</code>, <code>$OXIDIZED_USER</code>, <code>$OXIDIZED_PASSWORD</code>, etc.</div>
+            </div>
           </div>
 
           <h6 class="text-uppercase text-secondary fw-bold mb-3 border-bottom pb-2">SSH Cryptography & Host Keys</h6>

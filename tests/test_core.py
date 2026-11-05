@@ -263,3 +263,79 @@ def test_node_interval_timeout_and_anti_rapid_pulling():
     assert n_rapid.is_cooling_down()
     n_rapid.last_attempt = datetime.datetime.now() - datetime.timedelta(seconds=6)
     assert not n_rapid.is_cooling_down()
+
+@pytest.mark.django_db
+def test_cli_and_exec_input_mode_with_variables():
+    from oxidized.input import resolve_input, CLIInput, ExecInput
+
+    cli_input_cls = resolve_input('cli')
+    assert issubclass(cli_input_cls, ExecInput)
+
+    # Test Linux executable / command execution with variable interpolation and environment variables
+    node_data = {
+        'name': 'linux-test-router',
+        'ip': '10.50.0.1',
+        'model': 'ios',
+        'group': 'core',
+        'username': 'netadmin',
+        'password': 'routerpassword',
+        'input': 'cli',
+        'output': 'db',
+        'cli_cmd': "echo 'CONFIG from {host} for user {user}: pass={password}'",
+        'vars': {'region': 'us-east-1'}
+    }
+    node = Node(node_data)
+    assert node.cli_cmd == node_data['cli_cmd']
+    assert isinstance(node.input, ExecInput)
+
+    # Verify command execution and interpolation
+    output = node.input.cmd("")
+    assert "CONFIG from 10.50.0.1 for user netadmin: pass=routerpassword" in output
+
+    # Verify environment variable injection into external Linux processes
+    env_node = Node({
+        'name': 'env-node',
+        'ip': '192.168.99.1',
+        'username': 'env_user',
+        'password': 'env_secret',
+        'input': 'cli',
+        'output': 'db',
+        'cli_cmd': 'echo "ENV_HOST=$OXIDIZED_HOST ENV_USER=$OXIDIZED_USER ENV_PASS=$OXIDIZED_PASSWORD"'
+    })
+    env_output = env_node.input.cmd("")
+    assert "ENV_HOST=192.168.99.1" in env_output
+    assert "ENV_USER=env_user" in env_output
+    assert "ENV_PASS=env_secret" in env_output
+
+    # Verify full node run stores output in database
+    run_success = env_node.run()
+    assert run_success is True
+    assert env_node.last['status'] == 'success'
+    fetched = env_node.output.fetch(env_node.name, group=env_node.group)
+    assert "ENV_HOST=192.168.99.1" in fetched
+
+@pytest.mark.django_db
+def test_cli_runner_and_management_command_execution():
+    from django.core.management import call_command
+    import io
+
+    out = io.StringIO()
+    call_command(
+        'run_oxidized',
+        host='172.20.0.10',
+        node='mgmt-cli-router',
+        cli_cmd="echo 'hostname {name} host={host} user={user} pass={password}'",
+        username='admin',
+        password='mgmtpassword',
+        output='db',
+        stdout=out
+    )
+    output_text = out.getvalue()
+    assert "Successfully backed up mgmt-cli-router" in output_text
+
+    from oxidized.output import DatabaseOutput
+    db_out = DatabaseOutput()
+    content = db_out.fetch('mgmt-cli-router', 'default')
+    assert "hostname mgmt-cli-router" in content
+    assert "host=172.20.0.10" in content
+    assert "pass=mgmtpassword" in content

@@ -28,11 +28,12 @@ class OxidizedSetting(models.Model):
     stats_history_size = models.IntegerField(default=10, help_text="Number of recent job runs to retain in stats history")
 
     # Input Settings
-    input_default = models.CharField(max_length=64, default='ssh', help_text="Default input mechanism (e.g. ssh, telnet)")
+    input_default = models.CharField(max_length=64, default='ssh', help_text="Default input mechanism (e.g. ssh, telnet, cli, exec)")
     input_debug = models.BooleanField(default=False, help_text="Debug input sessions")
     input_ssh_secure = models.BooleanField(default=False, help_text="Enforce strict SSH host key checking")
     input_ftp_passive = models.BooleanField(default=True)
     input_utf8_encoded = models.BooleanField(default=True)
+    input_cli_cmd = models.CharField(max_length=512, blank=True, default="", help_text="Global CLI command template for cli/exec input (e.g. sshpass -p '{password}' ssh {user}@{host} cat /etc/config)")
 
     # Output Settings
     output_default = models.CharField(max_length=64, default='db', help_text="Default output mechanism (db, file, git)")
@@ -115,6 +116,7 @@ class OxidizedSetting(models.Model):
             'input': {
                 'default': self.input_default,
                 'debug': self.input_debug,
+                'cmd': self.input_cli_cmd,
                 'ssh': {
                     'secure': self.input_ssh_secure,
                 },
@@ -199,8 +201,9 @@ class Device(models.Model):
     group = models.CharField(max_length=64, default="default", blank=True)
     username = models.CharField(max_length=128, blank=True, help_text="Override username")
     password = models.CharField(max_length=128, blank=True, help_text="Override password")
-    input_type = models.CharField(max_length=32, default="ssh", help_text="Input method (ssh, telnet, exec, mock)")
+    input_type = models.CharField(max_length=32, default="ssh", help_text="Input method (ssh, telnet, cli, exec, mock)")
     output_type = models.CharField(max_length=32, default="db", help_text="Output method (db, file, git)")
+    cli_cmd = models.CharField(max_length=512, blank=True, default="", help_text="CLI/Linux executable command template (e.g. sshpass -p '{password}' ssh {user}@{host} cat /etc/config)")
     interval = models.IntegerField(null=True, blank=True, help_text="Per-host collection interval in seconds (overrides system interval if set)")
     extra_vars = models.JSONField(default=dict, blank=True, help_text="Extra variables / credentials in JSON format")
     enabled = models.BooleanField(default=True)
