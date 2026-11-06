@@ -49,13 +49,23 @@ def create_dynamic_model(custom_model_obj):
     # Add regex filters
     filters = custom_model_obj.clean_filters or []
     if filters:
-        def _clean_secret(self, cfg, cmd=""):
+        def _clean_regex(self, cfg, cmd=""):
             for f in filters:
+                pat, repl = None, None
                 if isinstance(f, (list, tuple)) and len(f) >= 2:
                     pat, repl = f[0], f[1]
-                    cfg = re.sub(pat, repl, cfg, flags=re.MULTILINE)
+                elif isinstance(f, dict):
+                    pat = f.get('pattern') or f.get('regex') or f.get('match')
+                    repl = f.get('replace') if 'replace' in f else f.get('replacement', '')
+                if pat is not None and repl is not None:
+                    try:
+                        cfg = re.sub(str(pat), str(repl), cfg, flags=re.MULTILINE)
+                    except Exception as err:
+                        logger.error("Regex replacement error for model %s (pattern %s): %s", custom_model_obj.name, pat, err)
             return cfg
-        dynamic_cls.add_secret(_clean_secret)
+
+        # Register as :all filter so it always performs the regex replacement before writing to DB or showing config
+        dynamic_cls.add_all(_clean_regex)
 
     # Execute custom code snippet if present
     if custom_model_obj.code_snippet:

@@ -94,11 +94,71 @@ def test_custom_model_from_database():
         'model': 'vyos',
         'input': 'mock',
         'output': 'file',
-        'vars': {'remove_secret': True}
     })
     success = node.run()
     assert success is True
     assert node.last['status'] == 'success'
+
+@pytest.mark.django_db
+def test_regex_string_replacement_before_db_write_and_display():
+    from oxidized_web.models import CustomModel, NodeRevision
+    from oxidized.model import resolve_model
+
+    CustomModel.objects.filter(name='regex_clean_model').delete()
+    cm = CustomModel.objects.create(
+        name='regex_clean_model',
+        description='Model with regex string replacement',
+        commands=['show running-config'],
+        clean_filters=[
+            [r'password\s+\S+', 'password <REDACTED_PASSWORD>'],
+            {'pattern': r'snmp-community\s+\S+', 'replace': 'snmp-community <REDACTED_SNMP>'},
+            [r'api_key=[0-9a-fA-F]+', 'api_key=REDACTED_KEY']
+        ]
+    )
+
+    resolved_cls = resolve_model('regex_clean_model')
+    assert resolved_cls is not None
+
+    node = Node({
+        'name': 'secure-firewall',
+        'ip': '10.10.10.1',
+        'model': 'regex_clean_model',
+        'input': 'mock',
+        'output': 'db'
+    })
+    node.model.input = node.input
+    raw_config = """! Firewall Config
+hostname secure-firewall
+password SuperSecretP@ssw0rd!
+snmp-community public_ro_string
+set cloud api_key=a1b2c3d4e5f6
+end"""
+    node.input.cmd = lambda c: raw_config
+
+    # Execute node backup
+    success = node.run()
+    assert success is True
+    assert node.last['status'] == 'success'
+
+    # Verify that string replacement regex was applied BEFORE writing to the database
+    rev = NodeRevision.objects.filter(node_name='secure-firewall').first()
+    assert rev is not None
+    db_content = rev.content
+
+    # Check unreplaced sensitive data does NOT exist in DB
+    assert 'SuperSecretP@ssw0rd!' not in db_content
+    assert 'public_ro_string' not in db_content
+    assert 'a1b2c3d4e5f6' not in db_content
+
+    # Check replacements were applied
+    assert 'password <REDACTED_PASSWORD>' in db_content
+    assert 'snmp-community <REDACTED_SNMP>' in db_content
+    assert 'api_key=REDACTED_KEY' in db_content
+
+    # Verify fetching returns the sanitized content
+    fetched = node.output.fetch('secure-firewall', 'default')
+    assert 'password <REDACTED_PASSWORD>' in fetched
+    assert 'SuperSecretP@ssw0rd!' not in fetched
 
 @pytest.mark.django_db
 def test_model_execution_and_output():

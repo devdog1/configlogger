@@ -23,6 +23,7 @@ A network device configuration backup tool inspired by [Oxidized](https://github
 - **Model Support**:
   - Library of **195 built-in network OS models** (Cisco IOS/XR/NXOS, Juniper JunOS, Arista EOS, FortiOS, VyOS, Huawei VRP, EdgeOS, etc.).
   - Support for **Custom OS Models** defined via web interface or Django Admin with configurable commands, prompts, and credentials.
+  - **Regex String Replacement (`clean_filters`)**: Built-in sanitization and secret-scrubbing that applies regex string replacements across all command outputs *before* writing configurations to the database (`NodeRevision`) and *before* displaying them in the web UI or REST API.
 - **Resilient Scheduling & Rate Limiting**:
   - System-wide interval scheduling (`interval`, default 3600s) and per-host interval overrides (`Device.interval`).
   - Adaptive failure backoff (`retry_delay` / `fail_timeout`, default 300s) before re-attempting failed devices.
@@ -102,6 +103,27 @@ The invoked command also inherits all node parameters in its environment:
     --cli-cmd "sshpass -p '{password}' ssh -o StrictHostKeyChecking=no {username}@{host} 'show running-config'" \
     -u admin -p s3cr3t -o db
   ```
+
+---
+
+### Model Regex String Replacement & Sanitization (`clean_filters`)
+
+Custom models support regex string replacement pairs to sanitize secrets, passwords, tokens, or dynamic operational noise before configurations are stored in PostgreSQL or rendered in the web UI / REST API.
+
+#### Syntax & Formats
+In `/models/add`, `/models/<id>/edit`, or the Django Admin for `CustomModel`, define `clean_filters` as a JSON array of `[pattern, replacement]` pairs or objects:
+```json
+[
+  ["password\\s+\\S+", "password <REDACTED_PASSWORD>"],
+  ["snmp-server community \\S+", "snmp-server community <HIDDEN>"],
+  {"pattern": "api_key=[0-9a-fA-F]+", "replace": "api_key=REDACTED_KEY"}
+]
+```
+
+#### Replacement Guarantees
+- **Pre-Storage & Pre-Display Execution**: Applied automatically as `:all` filters during command execution and CLI extraction.
+- **Zero Secret Leakage to Database**: Unsanitized raw secrets matching regex patterns are replaced before being committed to PostgreSQL (`NodeRevision`) or output files/Git.
+- **Unified Across Interfaces**: Web configuration viewer (`/node/fetch`), version history (`/node/version/view`), and diff comparisons (`/node/version/diffs`) all display the scrubbed configuration.
 
 ---
 
