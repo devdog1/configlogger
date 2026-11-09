@@ -23,8 +23,9 @@
   <script src="{% static 'weblibs/buttons.colVis.js' %}"></script>
 </head>
 <body>
-  <div id="ox-layout">
-    <!-- Left Sidebar Navigation -->
+  <div id="ox-layout" class="{% if not request.user.is_authenticated %}ox-layout-anonymous{% endif %}">
+    {% if request.user.is_authenticated %}
+    <!-- Left Sidebar Navigation (Only visible when logged in) -->
     <aside id="ox-sidebar">
       <a href="/nodes" class="ox-brand">
         <div class="ox-brand-logo">
@@ -115,11 +116,13 @@
         </li>
       </ul>
     </aside>
+    {% endif %}
 
     <!-- Main Content Area -->
-    <main id="ox-main">
+    <main id="ox-main" class="{% if not request.user.is_authenticated %}w-100{% endif %}">
       <!-- Top Bar -->
       <header class="ox-topbar">
+        {% if request.user.is_authenticated %}
         <form class="ox-search-form" action="/nodes/conf_search" method="post">
           {% csrf_token %}
           <div class="ox-search-input-group">
@@ -127,6 +130,15 @@
             <input type="text" name="search_in_conf_textbox" class="ox-search-input" placeholder="Search..." aria-label="Search">
           </div>
         </form>
+        {% else %}
+        <div class="d-flex align-items-center gap-2">
+          <svg width="24" height="24" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="40" height="40" rx="8" fill="#0f172a"/>
+            <path d="M14 12V28M26 12V28M10 16H30M10 24H30" stroke="#00b4d8" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+          <span class="fw-bold fs-6 tracking-wide text-dark">OXIDIZED</span>
+        </div>
+        {% endif %}
 
         <div class="ox-topbar-actions">
           <a class="btn btn-sm btn-outline-secondary" href="/nodes/stats" title="Statistics">

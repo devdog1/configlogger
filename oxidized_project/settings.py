@@ -13,6 +13,30 @@ DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() in ('1', 'true', 'yes')
 
 ALLOWED_HOSTS = ['*']
 
+# Reverse Proxy & CSRF Configuration
+# Support PROXY_URL or CSRF_TRUSTED_ORIGINS to allow proxy origin(s)
+CSRF_TRUSTED_ORIGINS = []
+_raw_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
+if _raw_origins:
+    CSRF_TRUSTED_ORIGINS.extend([origin.strip() for origin in _raw_origins.split(',') if origin.strip()])
+
+_proxy_url = os.environ.get('PROXY_URL', '').strip()
+if _proxy_url:
+    # Ensure scheme is present
+    if not (_proxy_url.startswith('http://') or _proxy_url.startswith('https://')):
+        _proxy_url = f"https://{_proxy_url}"
+    if _proxy_url not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(_proxy_url)
+
+# Always trust localhost by default for local development & previews
+for default_origin in ['http://127.0.0.1:8000', 'http://localhost:8000', 'http://127.0.0.1:8080', 'http://localhost:8080']:
+    if default_origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(default_origin)
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',

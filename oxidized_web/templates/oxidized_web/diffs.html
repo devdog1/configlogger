@@ -10,7 +10,7 @@
     <span class="sep">/</span>
     <a href="/node/show/{{ node_name }}">{{ node_name }}</a>
     <span class="sep">/</span>
-    <span class="text-secondary fw-semibold">Diff Comparison</span>
+    <span class="text-secondary fw-semibold">Split Diff Comparison</span>
   </div>
 
   <div class="d-flex gap-2">
@@ -24,43 +24,74 @@
 </div>
 
 <div class="ox-card">
-  <div class="ox-card-header">
+  <div class="ox-card-header d-flex justify-content-between align-items-center">
     <div class="ox-card-header-left">
-      <i class="bi bi-gear-fill"></i>
-      <span class="ox-card-header-title">Diff Comparison: {{ node_name }}</span>
+      <i class="bi bi-layout-split me-1"></i>
+      <span class="ox-card-header-title">Full Config Side-by-Side Diff: {{ node_name }}</span>
     </div>
-    <div class="ox-card-header-actions">
-      <span class="badge bg-light text-danger border me-1"><i class="bi bi-dash-circle me-1"></i>{{ oid1|slice:":8"|default:"Base" }}</span>
-      <i class="bi bi-arrow-right text-white-50"></i>
-      <span class="badge bg-light text-success border ms-1"><i class="bi bi-plus-circle me-1"></i>{{ oid2|slice:":8"|default:"Target" }}</span>
+    <div class="ox-card-header-actions d-flex align-items-center gap-2">
+      <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">
+        <i class="bi bi-dash-circle me-1"></i>Base ({{ oid1|slice:":8"|default:"Base" }})
+      </span>
+      <i class="bi bi-arrow-right text-muted"></i>
+      <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+        <i class="bi bi-plus-circle me-1"></i>Target ({{ oid2|slice:":8"|default:"Target" }})
+      </span>
     </div>
   </div>
 
   <div class="ox-card-body p-0">
-    {% if diff_lines %}
-      <div class="diff-container" style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.85rem; line-height: 1.5; overflow-x: auto; background-color: #ffffff;">
-        <table class="table table-sm table-borderless mb-0">
-          <tbody>
-            {% for item in diff_lines %}
-              <tr style="{% if item.type == 'add' %}background-color: #dcfce7; color: #166534;{% elif item.type == 'del' %}background-color: #fee2e2; color: #991b1b;{% elif item.type == 'header' %}background-color: #f1f5f9; font-weight: bold; color: #1e40af;{% endif %}">
-                <td class="text-end text-muted pe-3 user-select-none" style="width: 45px; border-right: 1px solid #e2e8f0;">
-                  {{ item.line_num|default:"" }}
-                </td>
-                <td class="ps-3" style="white-space: pre-wrap; word-break: break-all;">
-                  {% if item.type == 'add' %}
-                    <span class="fw-bold text-success me-2">+</span>{{ item.text }}
-                  {% elif item.type == 'del' %}
-                    <span class="fw-bold text-danger me-2">-</span>{{ item.text }}
-                  {% elif item.type == 'header' %}
-                    <span class="text-primary me-2">@</span>{{ item.text }}
-                  {% else %}
-                    <span class="text-muted me-2">&nbsp;</span>{{ item.text }}
-                  {% endif %}
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+    {% if split_rows %}
+      <div class="ox-split-diff-wrapper">
+        <!-- Left Pane: Base Version -->
+        <div class="ox-diff-pane ox-diff-pane-left">
+          <div class="ox-diff-pane-header">
+            <div>
+              <i class="bi bi-dash-square text-danger me-1"></i>
+              <span class="fw-bold">Base Revision:</span>
+              <code class="text-secondary">{{ oid1|default:"Base" }}</code>
+            </div>
+            <span class="badge bg-secondary">{{ total_lines1 }} lines</span>
+          </div>
+          <div class="ox-diff-scroll" id="diffScrollLeft">
+            <table class="ox-diff-table">
+              <tbody>
+                {% for row in split_rows %}
+                <tr class="ox-diff-row {{ row.left_class }}">
+                  <td class="ox-diff-num">{{ row.left_num }}</td>
+                  <td class="ox-diff-sign">{{ row.left_symbol }}</td>
+                  <td class="ox-diff-code">{{ row.left_text }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Right Pane: Target Version -->
+        <div class="ox-diff-pane">
+          <div class="ox-diff-pane-header">
+            <div>
+              <i class="bi bi-plus-square text-success me-1"></i>
+              <span class="fw-bold">Target Revision:</span>
+              <code class="text-secondary">{{ oid2|default:"Target" }}</code>
+            </div>
+            <span class="badge bg-secondary">{{ total_lines2 }} lines</span>
+          </div>
+          <div class="ox-diff-scroll" id="diffScrollRight">
+            <table class="ox-diff-table">
+              <tbody>
+                {% for row in split_rows %}
+                <tr class="ox-diff-row {{ row.right_class }}">
+                  <td class="ox-diff-num">{{ row.right_num }}</td>
+                  <td class="ox-diff-sign">{{ row.right_symbol }}</td>
+                  <td class="ox-diff-code">{{ row.right_text }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     {% else %}
       <div class="p-4 text-center text-muted">
@@ -70,4 +101,35 @@
     {% endif %}
   </div>
 </div>
+
+<script>
+  // Synchronized scrolling between left and right split panes
+  document.addEventListener('DOMContentLoaded', function () {
+    const leftPane = document.getElementById('diffScrollLeft');
+    const rightPane = document.getElementById('diffScrollRight');
+
+    if (!leftPane || !rightPane) return;
+
+    let isSyncingLeft = false;
+    let isSyncingRight = false;
+
+    leftPane.addEventListener('scroll', function () {
+      if (!isSyncingLeft) {
+        isSyncingRight = true;
+        rightPane.scrollTop = leftPane.scrollTop;
+        rightPane.scrollLeft = leftPane.scrollLeft;
+      }
+      isSyncingLeft = false;
+    });
+
+    rightPane.addEventListener('scroll', function () {
+      if (!isSyncingRight) {
+        isSyncingLeft = true;
+        leftPane.scrollTop = rightPane.scrollTop;
+        leftPane.scrollLeft = rightPane.scrollLeft;
+      }
+      isSyncingRight = false;
+    });
+  });
+</script>
 {% endblock %}

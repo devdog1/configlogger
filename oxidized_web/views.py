@@ -460,42 +460,114 @@ def node_version_view(request):
 
 @login_required
 def node_version_diffs(request):
+    import difflib
     node_name = request.GET.get('node_full') or request.GET.get('node')
     oid1 = request.GET.get('oid1')
     oid2 = request.GET.get('oid2')
     nodes = get_nodes(force_reload=True)
     n = nodes.get(node_name)
     diff = ""
+    content1 = ""
+    content2 = ""
     if n:
         if not can_user_access_group(request.user, n.group):
             return HttpResponseForbidden("You do not have permission to view diffs for this node group.")
         diff = n.output.get_diff(n.name, group=n.group, oid1=oid1, oid2=oid2)
+        try:
+            content1 = n.output.get_version(n.name, group=n.group, oid=oid1) or ""
+        except Exception:
+            content1 = ""
+        try:
+            content2 = n.output.get_version(n.name, group=n.group, oid=oid2) or ""
+        except Exception:
+            content2 = ""
 
     if request.path.endswith('.json') or request.GET.get('format') == 'json':
-        return JsonResponse({'node': node_name, 'diff': diff})
+        return JsonResponse({
+            'node': node_name,
+            'oid1': oid1,
+            'oid2': oid2,
+            'diff': diff,
+            'content1': content1,
+            'content2': content2
+        })
 
-    diff_lines = []
-    line_num = 1
-    for raw_line in diff.splitlines():
-        if raw_line.startswith('+++') or raw_line.startswith('---'):
-            diff_lines.append({'type': 'meta', 'text': raw_line, 'line_num': ''})
-        elif raw_line.startswith('@@'):
-            diff_lines.append({'type': 'header', 'text': raw_line, 'line_num': '...'})
-        elif raw_line.startswith('+'):
-            diff_lines.append({'type': 'add', 'text': raw_line[1:], 'line_num': line_num})
-            line_num += 1
-        elif raw_line.startswith('-'):
-            diff_lines.append({'type': 'del', 'text': raw_line[1:], 'line_num': ''})
-        else:
-            diff_lines.append({'type': 'context', 'text': raw_line[1:] if raw_line.startswith(' ') else raw_line, 'line_num': line_num})
-            line_num += 1
+    # Build aligned side-by-side full config rows with line numbers and +/- indicators
+    lines1 = content1.splitlines()
+    lines2 = content2.splitlines()
+
+    sm = difflib.SequenceMatcher(None, lines1, lines2)
+    split_rows = []
+
+    for tag, i1, i2, j1, j2 in sm.get_opcodes():
+        if tag == 'equal':
+            for l1, l2, n1, n2 in zip(lines1[i1:i2], lines2[j1:j2], range(i1 + 1, i2 + 1), range(j1 + 1, j2 + 1)):
+                split_rows.append({
+                    'type': 'equal',
+                    'left_num': n1,
+                    'left_symbol': ' ',
+                    'left_text': l1,
+                    'left_class': '',
+                    'right_num': n2,
+                    'right_symbol': ' ',
+                    'right_text': l2,
+                    'right_class': '',
+                })
+        elif tag == 'replace':
+            len1 = i2 - i1
+            len2 = j2 - j1
+            max_len = max(len1, len2)
+            for idx in range(max_len):
+                idx1 = i1 + idx
+                idx2 = j1 + idx
+                has_left = idx1 < i2
+                has_right = idx2 < j2
+                split_rows.append({
+                    'type': 'replace',
+                    'left_num': (idx1 + 1) if has_left else '',
+                    'left_symbol': '-' if has_left else ' ',
+                    'left_text': lines1[idx1] if has_left else '',
+                    'left_class': 'ox-diff-del' if has_left else 'ox-diff-empty',
+                    'right_num': (idx2 + 1) if has_right else '',
+                    'right_symbol': '+' if has_right else ' ',
+                    'right_text': lines2[idx2] if has_right else '',
+                    'right_class': 'ox-diff-add' if has_right else 'ox-diff-empty',
+                })
+        elif tag == 'delete':
+            for idx1 in range(i1, i2):
+                split_rows.append({
+                    'type': 'delete',
+                    'left_num': idx1 + 1,
+                    'left_symbol': '-',
+                    'left_text': lines1[idx1],
+                    'left_class': 'ox-diff-del',
+                    'right_num': '',
+                    'right_symbol': ' ',
+                    'right_text': '',
+                    'right_class': 'ox-diff-empty',
+                })
+        elif tag == 'insert':
+            for idx2 in range(j1, j2):
+                split_rows.append({
+                    'type': 'insert',
+                    'left_num': '',
+                    'left_symbol': ' ',
+                    'left_text': '',
+                    'left_class': 'ox-diff-empty',
+                    'right_num': idx2 + 1,
+                    'right_symbol': '+',
+                    'right_text': lines2[idx2],
+                    'right_class': 'ox-diff-add',
+                })
 
     return render(request, 'oxidized_web/diffs.html', {
         'node_name': node_name,
         'oid1': oid1,
         'oid2': oid2,
         'diff': diff,
-        'diff_lines': diff_lines
+        'split_rows': split_rows,
+        'total_lines1': len(lines1),
+        'total_lines2': len(lines2),
     })
 
 node_show = node_view

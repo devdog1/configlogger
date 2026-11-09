@@ -47,6 +47,11 @@ class OxidizedSettingAdminForm(forms.ModelForm):
         required=False,
         help_text="Default password (hidden for security)"
     )
+    azure_client_secret = forms.CharField(
+        widget=forms.PasswordInput(render_value=False),
+        required=False,
+        help_text="Azure App Registration Client Secret Value (masked; leave blank to keep current secret)"
+    )
 
     class Meta:
         model = OxidizedSetting
@@ -57,6 +62,12 @@ class OxidizedSettingAdminForm(forms.ModelForm):
         if not password and self.instance and self.instance.pk:
             return self.instance.password
         return password
+
+    def clean_azure_client_secret(self):
+        secret = self.cleaned_data.get('azure_client_secret')
+        if not secret and self.instance and self.instance.pk:
+            return self.instance.azure_client_secret
+        return secret
 
 
 @admin.register(OxidizedSetting)

@@ -424,3 +424,115 @@ body {
 
 .diffs_old { float: left; }
 .diffs_new { margin-left: 51%; }
+
+/* Split-Screen Diff Viewer */
+.ox-split-diff-wrapper {
+  display: flex;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  overflow: hidden;
+  height: calc(100vh - 240px);
+  min-height: 500px;
+}
+
+.ox-diff-pane {
+  flex: 1 1 50%;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ox-diff-pane-left {
+  border-right: 2px solid #cbd5e1;
+}
+
+.ox-diff-pane-header {
+  padding: 8px 14px;
+  background-color: #f1f5f9;
+  border-bottom: 1px solid #cbd5e1;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #334155;
+  user-select: none;
+}
+
+.ox-diff-scroll {
+  flex: 1 1 auto;
+  overflow-y: scroll;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  background-color: #ffffff;
+}
+
+.ox-diff-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.ox-diff-row {
+  height: 22px;
+}
+
+.ox-diff-row td {
+  padding: 1px 4px;
+  white-space: pre;
+  overflow: visible;
+  vertical-align: top;
+}
+
+.ox-diff-num {
+  width: 44px;
+  min-width: 44px;
+  max-width: 44px;
+  text-align: right;
+  color: #94a3b8;
+  border-right: 1px solid #e2e8f0;
+  padding-right: 6px !important;
+  user-select: none;
+  background-color: #f8fafc;
+}
+
+.ox-diff-sign {
+  width: 22px;
+  min-width: 22px;
+  max-width: 22px;
+  text-align: center;
+  font-weight: bold;
+  user-select: none;
+}
+
+.ox-diff-code {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* Row change styling */
+.ox-diff-del {
+  background-color: #fee2e2 !important;
+  color: #991b1b;
+}
+
+.ox-diff-del .ox-diff-sign {
+  color: #b91c1c;
+}
+
+.ox-diff-add {
+  background-color: #dcfce7 !important;
+  color: #166534;
+}
+
+.ox-diff-add .ox-diff-sign {
+  color: #15803d;
+}
+
+.ox-diff-empty {
+  background-color: #f8fafc !important;
+  color: transparent;
+}

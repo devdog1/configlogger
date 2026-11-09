@@ -338,3 +338,80 @@ def test_azure_entra_id_sso_flow(client, monkeypatch):
     resp_devices = client.get('/devices')
     assert resp_devices.status_code == 200
     assert b'entra.user@example.com' in resp_devices.content
+
+
+@pytest.mark.django_db
+def test_admin_azure_secret_hidden_and_preserved(client):
+    """Verify azure_client_secret is rendered with password widget and value is preserved when empty."""
+    from oxidized_web.models import OxidizedSetting
+    from oxidized_web.admin import OxidizedSettingAdminForm
+
+    setting, _ = OxidizedSetting.objects.get_or_create(
+        key='default',
+        defaults={'azure_client_secret': 'super-secret-azure-key'}
+    )
+    setting.azure_client_secret = 'super-secret-azure-key'
+    setting.save()
+
+    form = OxidizedSettingAdminForm(instance=setting)
+    assert form.fields['azure_client_secret'].widget.input_type == 'password'
+    assert not form.fields['azure_client_secret'].widget.render_value
+
+    # Submitting empty value should preserve existing secret
+    data = {k: form[k].value() for k in form.fields}
+    data['azure_client_secret'] = ''
+    bound_form = OxidizedSettingAdminForm(data=data, instance=setting)
+    assert bound_form.is_valid(), bound_form.errors
+    assert bound_form.cleaned_data['azure_client_secret'] == 'super-secret-azure-key'
+
+
+@pytest.mark.django_db
+def test_sidebar_hidden_when_unauthenticated(client):
+    """Verify the sidebar navigation menu is not rendered when unauthenticated."""
+    resp = client.get('/login')
+    assert resp.status_code == 200
+    assert b'id="ox-sidebar"' not in resp.content
+    assert b'ox-layout-anonymous' in resp.content
+
+    # When authenticated, sidebar is present
+    user = User.objects.create_user(username='bob', password='password123', is_staff=True)
+    client.force_login(user)
+    resp_logged = client.get('/nodes')
+    assert resp_logged.status_code == 200
+    assert b'id="ox-sidebar"' in resp_logged.content
+
+
+@pytest.mark.django_db
+def test_split_screen_diff_page_with_line_numbers_and_sync(client):
+    """Verify split diff comparison page renders both configs side by side with line numbers and +/-."""
+    from oxidized_web.models import NodeRevision
+    user = User.objects.create_user(username='carol', password='password123', is_staff=True)
+    client.force_login(user)
+
+    dev, _ = Device.objects.get_or_create(
+        name='sw-diff-test',
+        defaults={'ip': '10.10.10.5', 'model': 'ios', 'output_type': 'db'}
+    )
+
+    r1 = NodeRevision.objects.create(
+        node_name='sw-diff-test',
+        group='default',
+        oid='rev001',
+        content='hostname sw-diff-test\ninterface Gi0/1\n shutdown\n'
+    )
+    r2 = NodeRevision.objects.create(
+        node_name='sw-diff-test',
+        group='default',
+        oid='rev002',
+        content='hostname sw-diff-test\ninterface Gi0/1\n no shutdown\n'
+    )
+
+    resp = client.get(f'/node/version/diffs?node_full=sw-diff-test&oid1={r1.oid}&oid2={r2.oid}')
+    assert resp.status_code == 200
+    assert b'diffScrollLeft' in resp.content
+    assert b'diffScrollRight' in resp.content
+    assert b'ox-diff-del' in resp.content
+    assert b'ox-diff-add' in resp.content
+    assert b'-' in resp.content
+    assert b'+' in resp.content
+    assert b'sw-diff-test' in resp.content
