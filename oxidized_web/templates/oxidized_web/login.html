@@ -1,0 +1,70 @@
+{% extends "oxidized_web/base.html" %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+  <div class="col-md-5 col-lg-4">
+    <div class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <div class="text-center mb-4">
+          <i class="bi bi-shield-lock-fill text-primary" style="font-size: 2.8rem;"></i>
+          <h4 class="mt-2 fw-bold">Sign In to Oxidized</h4>
+          <p class="text-muted small">Authentication is required to view configs and devices</p>
+        </div>
+
+        {% if error %}
+        <div class="alert alert-danger py-2 small" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-1"></i>{{ error }}
+        </div>
+        {% endif %}
+
+        {% if messages %}
+          {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} py-2 small" role="alert">
+            {{ message }}
+          </div>
+          {% endfor %}
+        {% endif %}
+
+        <form method="post" action="{% url 'login' %}">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ next_url }}">
+          <div class="mb-3">
+            <label for="username" class="form-label small fw-semibold">Username</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-person"></i></span>
+              <input type="text" class="form-control" id="username" name="username" required autofocus placeholder="Username">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label small fw-semibold">Password</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-key"></i></span>
+              <input type="password" class="form-control" id="password" name="password" required placeholder="Password">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+            <i class="bi bi-box-arrow-in-right me-1"></i>Sign In (Local User)
+          </button>
+        </form>
+
+        {% if azure_sso_enabled %}
+        <div class="position-relative my-4">
+          <hr>
+          <span class="position-absolute top-50 start-50 translate-middle bg-body px-3 text-muted small">OR</span>
+        </div>
+
+        <a href="{% url 'azure_login' %}?next={{ next_url|urlencode }}" class="btn btn-outline-dark w-100 py-2 d-flex align-items-center justify-content-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 21 21">
+            <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
+            <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
+            <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
+            <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
+          </svg>
+          <span class="fw-semibold">Sign in with Microsoft Entra ID</span>
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,11 +1,18 @@
+import os
 import json
-from django.shortcuts import render, redirect
-from django.http import HttpResponse, JsonResponse, Http404, HttpResponseForbidden
+import logging
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse, JsonResponse, Http404, HttpResponseForbidden, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
+from django.contrib.auth.models import User
+from django.contrib import messages
 from oxidized.core import Core
 from oxidized.nodes import Nodes
 from oxidized.config import Config
+
+logger = logging.getLogger(__name__)
 
 _nodes_instance = None
 
@@ -88,7 +95,7 @@ def can_user_edit_config(user):
 def index(request):
     return redirect('/nodes')
 
-@login_required(login_url='/admin/login/')
+@login_required
 def nodes_list(request, filter_type=None, filter_value=None):
     nodes = get_nodes(force_reload=True)
     data = nodes.list()
@@ -124,7 +131,7 @@ def nodes_list(request, filter_type=None, filter_value=None):
         'filter_value': filter_value
     })
 
-@login_required(login_url='/admin/login/')
+@login_required
 def node_view(request, node_name=None, node=None):
     node_name = node_name or node
     if node_name and node_name.endswith('.json'):
@@ -155,7 +162,7 @@ def node_view(request, node_name=None, node=None):
 
     return render(request, 'oxidized_web/node.html', {'node': node_data})
 
-@login_required(login_url='/admin/login/')
+@login_required
 def node_fetch(request, node_name=None, group=None, node=None):
     node_name = node_name or node
     nodes = get_nodes(force_reload=True)
@@ -176,7 +183,7 @@ def node_fetch(request, node_name=None, group=None, node=None):
     return HttpResponse(content, content_type="text/plain; charset=utf-8")
 
 @csrf_exempt
-@login_required(login_url='/admin/login/')
+@login_required
 def node_next(request, node_name=None, group=None, node=None):
     node_name = node_name or node
     # Require permission to pull node based on node group
@@ -232,7 +239,7 @@ def _get_daemon_pid():
     return None, pid_file
 
 @csrf_exempt
-@login_required(login_url='/admin/login/')
+@login_required
 def reload_nodes(request):
     # Require special permission to trigger global reload or make config edits
     if not can_user_edit_config(request.user):
@@ -273,7 +280,7 @@ def reload_nodes(request):
     messages.success(request, msg)
     return redirect('daemon_control')
 
-@login_required(login_url='/admin/login/')
+@login_required
 def daemon_control_view(request):
     """View daemon process status, PID, and trigger config reloads or restarts."""
     if not can_user_view_node(request.user):
@@ -296,7 +303,7 @@ def daemon_control_view(request):
     }
     return render(request, 'oxidized_web/daemon_control.html', {'daemon_info': daemon_info})
 
-@login_required(login_url='/admin/login/')
+@login_required
 def daemon_status_api(request):
     """API endpoint returning running daemon status and PID in JSON."""
     pid, pid_file = _get_daemon_pid()
@@ -309,7 +316,7 @@ def daemon_status_api(request):
     })
 
 @csrf_exempt
-@login_required(login_url='/admin/login/')
+@login_required
 def daemon_reload_view(request):
     """Signal the background daemon to reload configuration and node inventory without restarting."""
     if not can_user_edit_config(request.user):
@@ -345,7 +352,7 @@ def daemon_reload_view(request):
     return redirect('daemon_control')
 
 @csrf_exempt
-@login_required(login_url='/admin/login/')
+@login_required
 def daemon_restart_view(request):
     """Gracefully terminate running daemon process (SIGTERM) so supervisor/systemd restarts it."""
     if not can_user_edit_config(request.user):
@@ -378,7 +385,7 @@ def daemon_restart_view(request):
         return JsonResponse({'status': 'ok', 'restarted': restarted})
     return redirect('daemon_control')
 
-@login_required(login_url='/admin/login/')
+@login_required
 def conf_search(request):
     query = (request.POST.get('search_in_conf_textbox') or
              request.GET.get('to_search') or
@@ -399,7 +406,7 @@ def conf_search(request):
         return JsonResponse({'query': query, 'matches': matches})
     return render(request, 'oxidized_web/conf_search.html', {'query': query, 'matches': matches})
 
-@login_required(login_url='/admin/login/')
+@login_required
 def stats_view(request):
     nodes = get_nodes(force_reload=True)
     data = nodes.list()
@@ -416,7 +423,7 @@ def stats_view(request):
         return JsonResponse(stats)
     return render(request, 'oxidized_web/stats.html', {'stats': stats})
 
-@login_required(login_url='/admin/login/')
+@login_required
 def node_version(request):
     node_name = request.GET.get('node_full') or request.GET.get('node')
     nodes = get_nodes(force_reload=True)
@@ -431,7 +438,7 @@ def node_version(request):
         return JsonResponse({'node': node_name, 'versions': versions})
     return render(request, 'oxidized_web/versions.html', {'node_name': node_name, 'versions': versions})
 
-@login_required(login_url='/admin/login/')
+@login_required
 def node_version_view(request):
     node_name = request.GET.get('node_full') or request.GET.get('node')
     oid = request.GET.get('oid')
@@ -451,7 +458,7 @@ def node_version_view(request):
         'content': content
     })
 
-@login_required(login_url='/admin/login/')
+@login_required
 def node_version_diffs(request):
     node_name = request.GET.get('node_full') or request.GET.get('node')
     oid1 = request.GET.get('oid1')
@@ -573,7 +580,7 @@ class UserModelForm(forms.ModelForm):
         }
 
 
-@login_required(login_url='/admin/login/')
+@login_required
 def device_list_view(request):
     if not can_user_view_node(request.user):
         return HttpResponseForbidden("You do not have permission to view devices.")
@@ -589,7 +596,7 @@ def device_list_view(request):
     })
 
 
-@login_required(login_url='/admin/login/')
+@login_required
 def device_create_view(request):
     if not can_user_edit_node(request.user):
         return HttpResponseForbidden("You do not have permission to add devices.")
@@ -610,7 +617,7 @@ def device_create_view(request):
     })
 
 
-@login_required(login_url='/admin/login/')
+@login_required
 def device_edit_view(request, pk):
     dev = get_object_or_404(Device, pk=pk)
     if not can_user_edit_node(request.user) or not can_user_access_group(request.user, dev.group):
@@ -633,7 +640,7 @@ def device_edit_view(request, pk):
     })
 
 
-@login_required(login_url='/admin/login/')
+@login_required
 def device_delete_view(request, pk):
     dev = get_object_or_404(Device, pk=pk)
     if not can_user_delete_node(request.user) or not can_user_access_group(request.user, dev.group):
@@ -647,7 +654,7 @@ def device_delete_view(request, pk):
     return render(request, 'oxidized_web/device_confirm_delete.html', {'device': dev})
 
 
-@login_required(login_url='/admin/login/')
+@login_required
 def model_list_view(request):
     if not can_user_view_model(request.user):
         return HttpResponseForbidden("You do not have permission to view models.")
@@ -660,7 +667,7 @@ def model_list_view(request):
     })
 
 
-@login_required(login_url='/admin/login/')
+@login_required
 def model_create_view(request):
     if not can_user_edit_model(request.user):
         return HttpResponseForbidden("You do not have permission to create models.")
@@ -680,7 +687,7 @@ def model_create_view(request):
     })
 
 
-@login_required(login_url='/admin/login/')
+@login_required
 def model_edit_view(request, pk):
     model_obj = get_object_or_404(CustomModel, pk=pk)
     if not can_user_edit_model(request.user):
@@ -702,7 +709,7 @@ def model_edit_view(request, pk):
     })
 
 
-@login_required(login_url='/admin/login/')
+@login_required
 def model_delete_view(request, pk):
     model_obj = get_object_or_404(CustomModel, pk=pk)
     if not can_user_delete_model(request.user):
@@ -713,3 +720,178 @@ def model_delete_view(request, pk):
         return redirect('model_list_view')
 
     return render(request, 'oxidized_web/model_confirm_delete.html', {'model_obj': model_obj})
+
+
+# ==========================================
+# Authentication & Azure / Entra ID SSO Views
+# ==========================================
+
+def _get_azure_config():
+    """Retrieve Azure AD / Entra ID configuration from DB or environment variables."""
+    from oxidized_web.models import OxidizedSetting
+    setting = OxidizedSetting.objects.filter(azure_sso_enabled=True).first() or OxidizedSetting.objects.first()
+
+    tenant_id = (setting.azure_tenant_id if setting and setting.azure_tenant_id else os.environ.get('AZURE_TENANT_ID', '')).strip()
+    client_id = (setting.azure_client_id if setting and setting.azure_client_id else os.environ.get('AZURE_CLIENT_ID', '')).strip()
+    client_secret = (setting.azure_client_secret if setting and setting.azure_client_secret else os.environ.get('AZURE_CLIENT_SECRET', '')).strip()
+    redirect_uri = (setting.azure_redirect_uri if setting and setting.azure_redirect_uri else os.environ.get('AZURE_REDIRECT_URI', '')).strip()
+    enabled = (setting.azure_sso_enabled if setting else False) or bool(os.environ.get('AZURE_SSO_ENABLED', '').lower() in ['1', 'true', 'yes'])
+
+    return {
+        'enabled': enabled and bool(client_id and client_secret),
+        'tenant_id': tenant_id or 'common',
+        'client_id': client_id,
+        'client_secret': client_secret,
+        'redirect_uri': redirect_uri,
+    }
+
+
+def _get_msal_app(azure_conf):
+    """Build MSAL ConfidentialClientApplication."""
+    import msal
+    authority = f"https://login.microsoftonline.com/{azure_conf['tenant_id']}"
+    return msal.ConfidentialClientApplication(
+        azure_conf['client_id'],
+        authority=authority,
+        client_credential=azure_conf['client_secret'],
+    )
+
+
+def login_view(request):
+    """User login supporting local credentials and Entra ID SSO."""
+    if request.user.is_authenticated:
+        return redirect(request.GET.get('next') or 'nodes_list')
+
+    azure_conf = _get_azure_config()
+    error = None
+    next_url = request.POST.get('next') or request.GET.get('next') or '/nodes'
+
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '')
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            if user.is_active:
+                auth_login(request, user)
+                return redirect(next_url)
+            else:
+                error = "This account is inactive."
+        else:
+            error = "Invalid username or password."
+
+    return render(request, 'oxidized_web/login.html', {
+        'azure_sso_enabled': azure_conf['enabled'],
+        'next_url': next_url,
+        'error': error,
+    })
+
+
+def logout_view(request):
+    """User logout view."""
+    auth_logout(request)
+    return redirect('login')
+
+
+def azure_login_view(request):
+    """Initiates Microsoft Entra ID OAuth2 login flow."""
+    azure_conf = _get_azure_config()
+    if not azure_conf['enabled']:
+        return HttpResponseBadRequest("Microsoft Azure / Entra ID SSO is not enabled or configured.")
+
+    next_url = request.GET.get('next') or '/nodes'
+    request.session['auth_next_url'] = next_url
+
+    redirect_uri = azure_conf['redirect_uri']
+    if not redirect_uri:
+        redirect_uri = request.build_absolute_uri('/auth/azure/callback')
+
+    msal_app = _get_msal_app(azure_conf)
+    scopes = ["User.Read"]
+    auth_url = msal_app.get_authorization_request_url(
+        scopes=scopes,
+        redirect_uri=redirect_uri,
+        state=next_url
+    )
+    return redirect(auth_url)
+
+
+def azure_callback_view(request):
+    """Handles OAuth2 callback from Microsoft Entra ID."""
+    azure_conf = _get_azure_config()
+    if not azure_conf['enabled']:
+        return HttpResponseBadRequest("Microsoft Azure / Entra ID SSO is not enabled or configured.")
+
+    code = request.GET.get('code')
+    error = request.GET.get('error')
+    error_desc = request.GET.get('error_description')
+
+    if error:
+        messages.error(request, f"Microsoft SSO error: {error_desc or error}")
+        return redirect('login')
+
+    if not code:
+        messages.error(request, "Authorization code missing from Microsoft response.")
+        return redirect('login')
+
+    redirect_uri = azure_conf['redirect_uri']
+    if not redirect_uri:
+        redirect_uri = request.build_absolute_uri('/auth/azure/callback')
+
+    try:
+        msal_app = _get_msal_app(azure_conf)
+        token_response = msal_app.acquire_token_by_authorization_code(
+            code=code,
+            scopes=["User.Read"],
+            redirect_uri=redirect_uri
+        )
+    except Exception as exc:
+        logger.exception("Error contacting MSAL authority")
+        messages.error(request, f"Failed to acquire Microsoft token: {exc}")
+        return redirect('login')
+
+    if 'error' in token_response:
+        messages.error(request, f"SSO authentication error: {token_response.get('error_description') or token_response.get('error')}")
+        return redirect('login')
+
+    # Extract user profile claims from id_token_claims
+    id_claims = token_response.get('id_token_claims', {})
+    username = (
+        id_claims.get('preferred_username') or
+        id_claims.get('email') or
+        id_claims.get('upn') or
+        id_claims.get('sub')
+    )
+    if not username:
+        messages.error(request, "Unable to extract username or email from Microsoft token.")
+        return redirect('login')
+
+    username = username.strip().lower()
+    first_name = id_claims.get('given_name', '')
+    last_name = id_claims.get('family_name', '')
+    email = id_claims.get('email', username if '@' in username else '')
+
+    user, created = User.objects.get_or_create(username=username, defaults={
+        'email': email,
+        'first_name': first_name,
+        'last_name': last_name,
+        'is_active': True,
+    })
+
+    if not created:
+        # Update details if needed
+        updated = False
+        if email and user.email != email:
+            user.email = email
+            updated = True
+        if first_name and user.first_name != first_name:
+            user.first_name = first_name
+            updated = True
+        if last_name and user.last_name != last_name:
+            user.last_name = last_name
+            updated = True
+        if updated:
+            user.save()
+
+    auth_login(request, user)
+    next_url = request.session.pop('auth_next_url', None) or request.GET.get('state') or '/nodes'
+    return redirect(next_url)

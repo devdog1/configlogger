@@ -229,3 +229,112 @@ def test_user_device_and_model_pages():
     })
     assert resp_model_create.status_code == 302
     assert CustomModel.objects.filter(name='custom_switch_os').exists()
+
+
+@pytest.mark.django_db
+def test_authentication_required_to_view_information(client):
+    """Verify that unauthenticated users cannot view nodes, devices, models, diffs, or stats."""
+    # Attempting to access protected endpoints without login redirects to /login
+    for path in ['/nodes', '/devices', '/models', '/nodes/stats', '/node/version/diffs', '/daemon']:
+        resp = client.get(path)
+        assert resp.status_code == 302
+        assert resp.url.startswith('/login')
+
+
+@pytest.mark.django_db
+def test_local_user_authentication(client):
+    """Verify standard local user login and logout."""
+    User.objects.create_user(username='alice', password='password123', is_staff=True)
+
+    # 1. Failed login
+    resp_fail = client.post('/login', {'username': 'alice', 'password': 'wrongpassword'})
+    assert resp_fail.status_code == 200
+    assert b"Invalid username or password" in resp_fail.content
+
+    # 2. Successful login
+    resp_success = client.post('/login', {'username': 'alice', 'password': 'password123', 'next': '/nodes'})
+    assert resp_success.status_code == 302
+    assert resp_success.url == '/nodes'
+
+    # 3. Can access protected page now
+    resp_nodes = client.get('/nodes')
+    assert resp_nodes.status_code == 200
+    assert b'alice' in resp_nodes.content
+
+    # 4. Logout
+    resp_logout = client.get('/logout')
+    assert resp_logout.status_code == 302
+    assert resp_logout.url == '/login'
+
+    # 5. Accessing nodes again redirects to login
+    resp_nodes_after = client.get('/nodes')
+    assert resp_nodes_after.status_code == 302
+
+
+@pytest.mark.django_db
+def test_azure_entra_id_sso_flow(client, monkeypatch):
+    """Verify Azure / Entra ID SSO login flow, callback token parsing, and user auto-provisioning."""
+    from oxidized_web.models import OxidizedSetting
+    setting, _ = OxidizedSetting.objects.get_or_create(key='default')
+    setting.azure_sso_enabled = True
+    setting.azure_tenant_id = 'test-tenant-id'
+    setting.azure_client_id = 'test-client-id'
+    setting.azure_client_secret = 'test-client-secret'
+    setting.save()
+
+    # Login page displays Entra ID button
+    resp_login = client.get('/login')
+    assert resp_login.status_code == 200
+    assert b"Sign in with Microsoft Entra ID" in resp_login.content
+
+    # Mock MSAL app
+    class MockMSALApp:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def get_authorization_request_url(self, scopes=None, redirect_uri=None, state=None):
+            return f"https://login.microsoftonline.com/test-tenant-id/oauth2/v2.0/authorize?client_id=test-client-id&state={state}"
+
+        def acquire_token_by_authorization_code(self, code=None, scopes=None, redirect_uri=None):
+            if code == 'valid_code':
+                return {
+                    'id_token_claims': {
+                        'preferred_username': 'entra.user@example.com',
+                        'email': 'entra.user@example.com',
+                        'given_name': 'Entra',
+                        'family_name': 'Engineer',
+                    }
+                }
+            return {'error': 'invalid_grant', 'error_description': 'Code expired or invalid'}
+
+    import msal
+    monkeypatch.setattr(msal, 'ConfidentialClientApplication', MockMSALApp)
+
+    # 1. Initiate Azure login
+    resp_azure_login = client.get('/auth/azure/login?next=/devices')
+    assert resp_azure_login.status_code == 302
+    assert 'login.microsoftonline.com' in resp_azure_login.url
+
+    # 2. Azure callback with valid code
+    resp_callback = client.get('/auth/azure/callback?code=valid_code&state=/devices')
+    assert resp_callback.status_code == 302
+    assert resp_callback.url == '/devices'
+
+    # Verify user was created in Django User model
+    assert User.objects.filter(username='entra.user@example.com').exists()
+    user = User.objects.get(username='entra.user@example.com')
+    assert user.first_name == 'Entra'
+    assert user.last_name == 'Engineer'
+    assert user.email == 'entra.user@example.com'
+
+    # Verify authenticated session can access /nodes
+    resp_nodes = client.get('/nodes')
+    assert resp_nodes.status_code == 200
+    assert b'entra.user@example.com' in resp_nodes.content
+
+    # If granted staff/device permissions, can also access /devices
+    user.is_staff = True
+    user.save()
+    resp_devices = client.get('/devices')
+    assert resp_devices.status_code == 200
+    assert b'entra.user@example.com' in resp_devices.content

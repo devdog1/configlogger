@@ -6,6 +6,12 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index, name='index'),
 
+    # Authentication & Azure SSO
+    path('login', views.login_view, name='login'),
+    path('logout', views.logout_view, name='logout'),
+    path('auth/azure/login', views.azure_login_view, name='azure_login'),
+    path('auth/azure/callback', views.azure_callback_view, name='azure_callback'),
+
     path('nodes', views.nodes_list, name='nodes_list'),
     path('nodes.json', views.nodes_list, name='nodes_list_json'),
     path('nodes/group/<str:filter_value>', views.nodes_list, {'filter_type': 'group'}, name='nodes_group'),

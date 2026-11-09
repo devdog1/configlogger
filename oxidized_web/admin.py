@@ -125,9 +125,19 @@ class OxidizedSettingAdmin(admin.ModelAdmin):
                 'model_overrides',
                 'group_overrides',
                 'hooks',
-                'updated_at',
             ),
             'description': 'Model overrides, group configurations, variables (remove_secret, auth_methods), and event hooks.'
+        }),
+        ('Microsoft Azure / Entra ID SSO Authentication', {
+            'fields': (
+                'azure_sso_enabled',
+                'azure_tenant_id',
+                'azure_client_id',
+                'azure_client_secret',
+                'azure_redirect_uri',
+                'updated_at',
+            ),
+            'description': 'Configure Azure AD / Microsoft Entra ID Single Sign-On (OAuth2/OIDC).'
         }),
     )
 

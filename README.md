@@ -380,6 +380,24 @@ sudo systemctl restart oxidized
 
 ---
 
+## User Authentication & Microsoft Azure / Entra ID SSO
+
+All web views, device inventories, configuration diffs, and models require authentication. Oxidized supports:
+1. **Local Defined Users**:
+   - Create local administrators or operators via standard Django user management (`python3 manage.py createsuperuser` or through the admin interface at `/admin/auth/user/`).
+   - Log in using username and password at `/login`.
+2. **Microsoft Azure / Entra ID SSO**:
+   - Single Sign-On using OAuth2 / OpenID Connect powered by MSAL (`msal`).
+   - Configure Azure credentials either via the Django Admin page under **Oxidized Configuration > Microsoft Azure / Entra ID SSO Authentication** or using environment variables:
+     * `AZURE_SSO_ENABLED=true`
+     * `AZURE_TENANT_ID=<your-tenant-id-or-common>`
+     * `AZURE_CLIENT_ID=<your-app-registration-client-id>`
+     * `AZURE_CLIENT_SECRET=<your-client-secret-value>`
+     * `AZURE_REDIRECT_URI=https://<your-oxidized-domain>/auth/azure/callback`
+   - When enabled, the login screen displays a **"Sign in with Microsoft Entra ID"** SSO button. Upon successful authentication, user accounts are automatically provisioned and logged in.
+
+---
+
 ## Testing
 
 Run the automated test suite with `pytest`:

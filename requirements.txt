@@ -5,5 +5,6 @@ paramiko>=3.0
 dulwich>=0.21
 requests>=2.31
 gunicorn>=22.0
+msal>=1.28.0
 pytest>=8.0
 pytest-django>=4.8

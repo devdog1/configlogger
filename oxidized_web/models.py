@@ -78,6 +78,36 @@ class OxidizedSetting(models.Model):
         help_text='Configured hooks, e.g. {"push_to_remote": {"type": "githubrepo", "events": ["post_store"]}, "email_output": {"type": "exec"}}'
     )
 
+    # Microsoft Azure / Entra ID SSO Settings
+    azure_sso_enabled = models.BooleanField(
+        default=False,
+        help_text="Enable Microsoft Azure / Entra ID Single Sign-On (SSO)"
+    )
+    azure_tenant_id = models.CharField(
+        max_length=128,
+        blank=True,
+        default="",
+        help_text="Azure Tenant ID (or 'common' / 'organizations')"
+    )
+    azure_client_id = models.CharField(
+        max_length=128,
+        blank=True,
+        default="",
+        help_text="Azure App Registration Application (Client) ID"
+    )
+    azure_client_secret = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        help_text="Azure App Registration Client Secret Value"
+    )
+    azure_redirect_uri = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        help_text="Callback redirect URI (defaults to /auth/azure/callback if blank)"
+    )
+
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
