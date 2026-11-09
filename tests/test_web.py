@@ -415,3 +415,71 @@ def test_split_screen_diff_page_with_line_numbers_and_sync(client):
     assert b'-' in resp.content
     assert b'+' in resp.content
     assert b'sw-diff-test' in resp.content
+
+
+@pytest.mark.django_db
+def test_clean_filters_fortios_regex_scrubbing():
+    """Verify that clean_filters handles FortiOS passwords and JSON strings."""
+    from oxidized.model import create_dynamic_model
+    from oxidized_web.models import CustomModel
+
+    cm, _ = CustomModel.objects.get_or_create(
+        name='fortios_test_model',
+        defaults={
+            'clean_filters': '[["(set (?:passwd|password|key|group-password|auth-password-l1|auth-password-l2|rsso|history0|history1)) .+", "<removed>"]]'
+        }
+    )
+
+    sample = """
+    edit "WCG_Admin"
+        set accprofile "super_admin"
+        set password ENC PB2HrXzVLUR4
+    next
+config system ha
+    set password ENC nXWe05bntDXznP2tTUh3+
+    set hbdev "port1" 0 "port2" 0
+"""
+    dyn = create_dynamic_model(cm)
+    inst = dyn()
+    out = sample
+    for f in inst._cmds['all']:
+        out = f(inst, out)
+
+    assert "ENC PB2HrXzVLUR4" not in out
+    assert "ENC nXWe05bntDXznP2tTUh3+" not in out
+    assert "<removed>" in out
+
+
+@pytest.mark.django_db
+def test_device_model_dropdown_shows_only_enabled_models():
+    """Verify that Device form dropdown only displays enabled models."""
+    from oxidized_web.models import CustomModel
+    from oxidized_web.views import UserDeviceForm
+
+    CustomModel.objects.filter(name='model_disabled_test').delete()
+    CustomModel.objects.create(name='model_disabled_test', description='Disabled OS', enabled=False)
+
+    form = UserDeviceForm()
+    model_choices = [c[0] for c in form.fields['model'].choices]
+    assert 'model_disabled_test' not in model_choices
+
+
+@pytest.mark.django_db
+def test_config_revision_deduplication():
+    """Verify that identical consecutive backups do not create duplicate NodeRevision entries."""
+    from oxidized.output import _save_pg_revision
+    from oxidized_web.models import NodeRevision
+
+    node = 'dedup-test-device'
+    NodeRevision.objects.filter(node_name=node).delete()
+
+    oid1 = _save_pg_revision(node, 'default', 'version 1 content')
+    assert NodeRevision.objects.filter(node_name=node).count() == 1
+
+    oid2 = _save_pg_revision(node, 'default', 'version 1 content')
+    assert NodeRevision.objects.filter(node_name=node).count() == 1
+    assert oid1 == oid2
+
+    oid3 = _save_pg_revision(node, 'default', 'version 2 content')
+    assert NodeRevision.objects.filter(node_name=node).count() == 2
+    assert oid3 != oid1

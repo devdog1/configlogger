@@ -230,8 +230,8 @@
               <span class="text-muted small">—</span>
             {% endif %}
           </td>
-          <td><small class="text-muted">{{ node.time }}</small></td>
-          <td><small class="text-muted">{{ node.mtime }}</small></td>
+          <td><small class="text-muted time">{{ node.time }}</small></td>
+          <td><small class="text-muted time">{{ node.mtime }}</small></td>
           <td class="text-end">
             <div class="btn-group btn-group-sm" role="group">
               <a class="btn btn-outline-primary" title="View Config" href="/node/fetch/{{ node.name }}">
@@ -243,6 +243,11 @@
               <a class="btn btn-outline-success" title="Backup Now" href="/node/next/{{ node.name }}">
                 <i class="bi bi-play-fill"></i>
               </a>
+              {% if can_edit and node.pk %}
+              <a class="btn btn-outline-warning" title="Edit Device" href="{% url 'device_edit_view' node.pk %}">
+                <i class="bi bi-pencil-square"></i>
+              </a>
+              {% endif %}
             </div>
           </td>
         </tr>

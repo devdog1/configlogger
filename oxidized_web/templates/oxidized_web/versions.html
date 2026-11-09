@@ -94,7 +94,7 @@
         {% for v in versions %}
         <tr>
           <td><code class="fw-bold text-primary">{{ v.oid|slice:":8" }}</code></td>
-          <td>{{ v.date }}</td>
+          <td><span class="time" epoch="{{ v.time }}">{{ v.date }}</span></td>
           <td><span class="badge bg-light text-dark border">{{ v.author }}</span></td>
           <td><span class="ox-pill ox-pill-blue">Updated</span></td>
           <td>{{ v.message }}</td>

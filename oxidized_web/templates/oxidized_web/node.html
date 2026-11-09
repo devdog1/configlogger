@@ -24,6 +24,11 @@
     <a class="btn btn-sm btn-success" href="/node/next/{{ node.name }}">
       <i class="bi bi-play-fill me-1"></i>Backup Now
     </a>
+    {% if can_edit and node.pk %}
+    <a class="btn btn-sm btn-warning" href="{% url 'device_edit_view' node.pk %}">
+      <i class="bi bi-pencil-square me-1"></i>Edit Device
+    </a>
+    {% endif %}
   </div>
 </div>
 
@@ -37,7 +42,9 @@
           <span class="ox-card-header-title">Device Configuration</span>
         </div>
         <div class="ox-card-header-actions">
-          <a href="/admin/oxidized_web/device/" target="_blank" title="Edit in Admin"><i class="bi bi-pencil-square"></i></a>
+          {% if can_edit and node.pk %}
+          <a href="{% url 'device_edit_view' node.pk %}" title="Edit Device"><i class="bi bi-pencil-square"></i></a>
+          {% endif %}
         </div>
       </div>
       <table class="ox-card-table">
@@ -129,7 +136,7 @@
           </tr>
           <tr>
             <td>Last Run Timestamp</td>
-            <td class="ox-metric-val">{{ node.last.end|default:"Never" }}</td>
+            <td class="ox-metric-val"><span class="time">{{ node.last.end|default:"Never" }}</span></td>
           </tr>
           <tr>
             <td>Error / Failure Reason</td>

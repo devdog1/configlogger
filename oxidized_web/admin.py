@@ -23,21 +23,24 @@ class DeviceAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         choices = []
-        seen = set()
+        # Only show models that are currently enabled in the system
         for cm in CustomModel.objects.filter(enabled=True).order_by('name'):
             label = f"{cm.description or cm.name.capitalize()} ({cm.name})"
             choices.append((cm.name, label))
-            seen.add(cm.name)
 
-        # Fallbacks for primary models if not in custom models
-        for p in ['ios', 'junos', 'eos']:
-            if p not in seen:
-                choices.insert(0, (p, f"{p.upper()} ({p})"))
+        # If the device instance already has a model, ensure it remains in choices
+        if self.instance and self.instance.pk and self.instance.model:
+            existing_model = self.instance.model
+            if existing_model not in [c[0] for c in choices]:
+                choices.insert(0, (existing_model, f"{existing_model} (current)"))
+
+        if not choices:
+            choices = [('ios', 'Cisco IOS (ios)')]
 
         self.fields['model'] = forms.ChoiceField(
             choices=choices,
-            initial=self.instance.model if self.instance and self.instance.pk else 'ios',
-            help_text="Select device OS model from dropdown"
+            initial=self.instance.model if self.instance and self.instance.pk else (choices[0][0] if choices else 'ios'),
+            help_text="Select device OS model from dropdown (only enabled models shown)"
         )
 
 

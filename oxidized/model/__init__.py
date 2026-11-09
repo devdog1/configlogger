@@ -47,13 +47,27 @@ def create_dynamic_model(custom_model_obj):
                 dynamic_cls.add_cmd(cmd_str, input=cmd_item.get('input'))
 
     # Add regex filters
-    filters = custom_model_obj.clean_filters or []
+    raw_filters = custom_model_obj.clean_filters or []
+    if isinstance(raw_filters, str):
+        try:
+            raw_filters = json.loads(raw_filters)
+        except Exception:
+            raw_filters = []
+
+    filters = raw_filters if isinstance(raw_filters, list) else []
     if filters:
         def _clean_regex(self, cfg, cmd=""):
             for f in filters:
                 pat, repl = None, None
                 if isinstance(f, (list, tuple)) and len(f) >= 2:
                     pat, repl = f[0], f[1]
+                elif isinstance(f, str):
+                    try:
+                        parsed_f = json.loads(f)
+                        if isinstance(parsed_f, (list, tuple)) and len(parsed_f) >= 2:
+                            pat, repl = parsed_f[0], parsed_f[1]
+                    except Exception:
+                        pass
                 elif isinstance(f, dict):
                     pat = f.get('pattern') or f.get('regex') or f.get('match')
                     repl = f.get('replace') if 'replace' in f else f.get('replacement', '')

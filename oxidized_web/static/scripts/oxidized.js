@@ -1,52 +1,48 @@
 var convertTime = function() {
-  /* Convert UTC times to local browser times
-  *  Requires that the times on the server are UTC
-  *  Requires a class name of `time` to be set on element desired to be changed
-  *  Requires that element has an attribute `epoch` containing the seconds since
-  *  1.1.1970 UTC.
-  */
-  $('.time').each(function() {
-    var content = $(this).text();
-    if(content === 'never' || content === 'unknown' || content === '') {
-      return;
-    }
-    var epoch = $(this).attr('epoch');
-    if(epoch === undefined) {
-      return;
-    }
-    var utcTime = Number(epoch);
-    var dj = dayjs.unix(utcTime).local();
+  /* Convert UTC timestamps or ISO/formatted date strings to user's local browser timezone */
+  if (typeof dayjs === 'undefined') {
+    return;
+  }
+  if (dayjs.extend && typeof dayjs_plugin_utc !== 'undefined') {
+    dayjs.extend(dayjs_plugin_utc);
+  }
 
-    $(this).text(dj.format('YYYY-MM-DD HH:mm:ss [(UTC]Z[)]'));
+  $('.time, [data-time]').each(function() {
+    var rawText = $(this).text().trim();
+    if (!rawText || rawText === 'never' || rawText === 'Never' || rawText === 'unknown' || rawText === '—') {
+      return;
+    }
+
+    var epoch = $(this).attr('data-epoch') || $(this).attr('epoch');
+    var dj;
+    if (epoch !== undefined && epoch !== null && epoch !== '') {
+      var sec = Number(epoch);
+      if (!isNaN(sec) && sec > 0) {
+        dj = dayjs.unix(sec);
+      }
+    } else {
+      // Parse ISO or standard YYYY-MM-DD HH:mm:ss strings as UTC
+      var cleaned = rawText.replace(' UTC', '');
+      if (dayjs.utc) {
+        dj = dayjs.utc(cleaned);
+      } else {
+        dj = dayjs(cleaned);
+      }
+    }
+
+    if (dj && dj.isValid()) {
+      var localDj = dj.local();
+      $(this).text(localDj.format('YYYY-MM-DD HH:mm:ss'));
+      $(this).attr('title', 'Local Time (Browser: ' + Intl.DateTimeFormat().resolvedOptions().timeZone + ')');
+    }
   });
 };
 
 $(function() {
   convertTime();
 
-  // Reloads the nodes from a source by calling the /reload.json URI
-  $('#reload').click(function() {
-    $.get(window.location.pathname.replace(/nodes.*/g, '')+'reload.json')
-      .done(function(data) {
-        $('#flashMessage')
-        .removeClass('alert-danger')
-        .addClass('alert-success')
-        .text(data);
-      })
-      .fail(function() {
-        var data = 'Unable to reload nodes'
-        $('#flashMessage')
-          .removeClass('alert-success')
-          .addClass('alert-danger')
-          .text(data);
-      })
-      .always(function() {
-        $('#flashMessage').removeClass('hidden');
-      });
-  });
-
-  // Update timestamp on next button click for DataTables
-  $('.paginate_button').on('click', function() {
+  // Re-run conversion when DataTables redraws or paginates
+  $(document).on('draw.dt page.dt order.dt search.dt', function() {
     convertTime();
   });
 });

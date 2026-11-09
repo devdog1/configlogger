@@ -21,6 +21,9 @@
   <script src="{% static 'weblibs/dataTables.buttons.js' %}"></script>
   <script src="{% static 'weblibs/buttons.bootstrap5.js' %}"></script>
   <script src="{% static 'weblibs/buttons.colVis.js' %}"></script>
+  <script src="{% static 'weblibs/dayjs.min.js' %}"></script>
+  <script src="{% static 'weblibs/dayjs-plugin-utc.min.js' %}"></script>
+  <script src="{% static 'scripts/oxidized.js' %}"></script>
 </head>
 <body>
   <div id="ox-layout" class="{% if not request.user.is_authenticated %}ox-layout-anonymous{% endif %}">
@@ -58,7 +61,6 @@
           <div class="collapse show" id="menu-devices">
             <ul class="ox-submenu">
               <li><a href="/nodes" class="ox-submenu-link">Device Dashboard</a></li>
-              <li><a href="{% url 'device_list_view' %}" class="ox-submenu-link">Device Configuration</a></li>
               <li><a href="{% url 'device_create_view' %}" class="ox-submenu-link">Add Device</a></li>
             </ul>
           </div>

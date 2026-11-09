@@ -114,9 +114,11 @@ def nodes_list(request, filter_type=None, filter_value=None):
     if filter_type and filter_value:
         data = [n for n in data if n.get(filter_type) == filter_value]
 
-    # Cross-reference with NodeRevision if mtime is still 'never'
-    from oxidized_web.models import NodeRevision
+    # Cross-reference with Device PK and NodeRevision
+    from oxidized_web.models import Device, NodeRevision
+    device_map = {d.name: d.pk for d in Device.objects.all()}
     for n in data:
+        n['pk'] = device_map.get(n['name'])
         if n.get('mtime') == 'never':
             latest_rev = NodeRevision.objects.filter(node_name=n['name']).order_by('-created_at').first()
             if latest_rev:
@@ -128,7 +130,9 @@ def nodes_list(request, filter_type=None, filter_value=None):
     return render(request, 'oxidized_web/nodes.html', {
         'nodes': data,
         'filter_type': filter_type,
-        'filter_value': filter_value
+        'filter_value': filter_value,
+        'can_edit': can_user_edit_node(request.user),
+        'can_delete': can_user_delete_node(request.user),
     })
 
 @login_required
@@ -151,8 +155,11 @@ def node_view(request, node_name=None, node=None):
     if 'vars' in node_data and isinstance(node_data['vars'], dict):
         node_data['vars'] = {k: ('<hidden>' if 'pass' in k.lower() or 'secret' in k.lower() else v) for k, v in node_data['vars'].items()}
 
+    from oxidized_web.models import Device, NodeRevision
+    dev_obj = Device.objects.filter(name=node_data['name']).first()
+    node_data['pk'] = dev_obj.pk if dev_obj else None
+
     if node_data.get('mtime') == 'never':
-        from oxidized_web.models import NodeRevision
         latest_rev = NodeRevision.objects.filter(node_name=node_data['name']).order_by('-created_at').first()
         if latest_rev:
             node_data['mtime'] = latest_rev.created_at.strftime("%Y-%m-%d %H:%M:%S")
@@ -160,7 +167,11 @@ def node_view(request, node_name=None, node=None):
     if request.path.endswith('.json') or request.GET.get('format') == 'json':
         return JsonResponse(node_data)
 
-    return render(request, 'oxidized_web/node.html', {'node': node_data})
+    return render(request, 'oxidized_web/node.html', {
+        'node': node_data,
+        'can_edit': can_user_edit_node(request.user),
+        'can_delete': can_user_delete_node(request.user),
+    })
 
 @login_required
 def node_fetch(request, node_name=None, group=None, node=None):
@@ -616,19 +627,24 @@ class UserDeviceForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         choices = []
-        seen = set()
+        # Only show models that are currently enabled in the system
         for cm in CustomModel.objects.filter(enabled=True).order_by('name'):
             label = f"{cm.description or cm.name.capitalize()} ({cm.name})"
             choices.append((cm.name, label))
-            seen.add(cm.name)
-        for p in ['ios', 'junos', 'eos']:
-            if p not in seen:
-                choices.insert(0, (p, f"{p.upper()} ({p})"))
+
+        # If the device instance already has a model, ensure it remains in choices
+        if self.instance and self.instance.pk and self.instance.model:
+            existing_model = self.instance.model
+            if existing_model not in [c[0] for c in choices]:
+                choices.insert(0, (existing_model, f"{existing_model} (current)"))
+
+        if not choices:
+            choices = [('ios', 'Cisco IOS (ios)')]
 
         self.fields['model'] = forms.ChoiceField(
             choices=choices,
             widget=forms.Select(attrs={'class': 'form-select'}),
-            help_text="Select device OS model from dropdown"
+            help_text="Select device OS model from dropdown (only enabled models shown)"
         )
 
     def clean_password(self):
@@ -700,7 +716,7 @@ def device_edit_view(request, pk):
         if form.is_valid():
             form.save()
             get_nodes(force_reload=True)
-            return redirect('device_list_view')
+            return redirect('nodes_list')
     else:
         form = UserDeviceForm(instance=dev)
 
@@ -721,7 +737,7 @@ def device_delete_view(request, pk):
     if request.method == 'POST':
         dev.delete()
         get_nodes(force_reload=True)
-        return redirect('device_list_view')
+        return redirect('nodes_list')
 
     return render(request, 'oxidized_web/device_confirm_delete.html', {'device': dev})
 
