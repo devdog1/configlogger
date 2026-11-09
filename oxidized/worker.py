@@ -29,10 +29,20 @@ class Worker:
     def reload(self):
         logger.info("Reloading worker nodes")
         self.nodes.load()
-        existing_names = {n.name for n in self.queue}
+        existing_map = {n.name: n for n in self.queue}
+        new_queue = []
         for n in self.nodes:
-            if n.name not in existing_names:
-                self.queue.append(n)
+            if n.name in existing_map:
+                old_node = existing_map[n.name]
+                # Preserve runtime execution state if available
+                n.last = old_node.last
+                n.attempts = old_node.attempts
+                n.last_error = old_node.last_error
+                n.running = old_node.running
+                n.last_attempt = old_node.last_attempt
+                n.last_modified = old_node.last_modified
+            new_queue.append(n)
+        self.queue = new_queue
 
     def next(self, node_name):
         node = self.nodes.get(node_name)

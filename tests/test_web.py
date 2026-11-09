@@ -99,6 +99,26 @@ def test_oxidized_web_views_and_api():
     assert resp.status_code == 200
     assert resp.json().get('reloaded') is True
 
+    # /daemon control page
+    resp = client.get('/daemon')
+    assert resp.status_code == 200
+    assert b'Daemon Control' in resp.content
+
+    # /daemon/status API
+    resp = client.get('/daemon/status')
+    assert resp.status_code == 200
+    assert 'running' in resp.json()
+
+    # /daemon/reload API
+    resp = client.post('/daemon/reload.json')
+    assert resp.status_code == 200
+    assert resp.json()['status'] == 'ok'
+
+    # /daemon/restart API
+    resp = client.post('/daemon/restart.json')
+    assert resp.status_code == 200
+    assert 'restarted' in resp.json()
+
     # /nodes/stats
     resp = client.get('/nodes/stats')
     assert resp.status_code == 200

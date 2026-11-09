@@ -325,6 +325,30 @@ def test_node_interval_timeout_and_anti_rapid_pulling():
     assert not n_rapid.is_cooling_down()
 
 @pytest.mark.django_db
+def test_daemon_pid_and_reload_cycle():
+    from oxidized.core import Core
+    import tempfile, os
+
+    tmp_pid = tempfile.mktemp(suffix='.pid')
+    core = Core({'run_once': True, 'pid': tmp_pid})
+    core.pid_file = tmp_pid
+
+    # Write PID file
+    core._write_pid_file()
+    assert os.path.exists(tmp_pid)
+    with open(tmp_pid) as f:
+        assert f.read() == str(os.getpid())
+
+    # Reload signal simulation
+    core.need_reload = True
+    core.reload()
+    assert core.need_reload is False
+
+    # Stop and verify cleanup
+    core.stop()
+    assert not os.path.exists(tmp_pid)
+
+@pytest.mark.django_db
 def test_cli_and_exec_input_mode_with_variables():
     from oxidized.input import resolve_input, CLIInput, ExecInput
 

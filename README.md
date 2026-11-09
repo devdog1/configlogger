@@ -182,45 +182,200 @@ python3 manage.py createsuperuser
 
 ---
 
-## Running the Application
+## Production Deployment Instructions
 
-### 1. Run the Web Server
+For robust production environments, the **Oxidized Backup Daemon** and the **Django Web Interface** should be managed as independent **systemd services** running behind an Nginx reverse proxy.
 
-```bash
-python3 manage.py runserver 0.0.0.0:8000
+---
+
+### Architecture Overview
+
 ```
-- **Web UI**: `http://localhost:8000/nodes`
-- **Device Management**: `http://localhost:8000/devices`
-- **OS Model Library**: `http://localhost:8000/models`
-- **Django Admin**: `http://localhost:8000/admin/`
-
-### 2. Run the Backup Daemon
-
-#### Via Django Management Command:
-```bash
-# Continuous daemon mode:
-python3 manage.py run_oxidized
-
-# Single pass for all enabled devices:
-python3 manage.py run_oxidized --run-once
-
-# Single pass with verbose debug output:
-python3 manage.py run_oxidized --run-once -v
-
-# Target specific node:
-python3 manage.py run_oxidized --node core-switch-01
++-------------------------------------------------------------------------+
+|                                Nginx                                    |
+|                       (Port 80/443 SSL Termination)                     |
++------------------------------------+------------------------------------+
+                                     | Reverse Proxy (Unix Socket or HTTP)
+                                     v
+                  +--------------------------------------+
+                  |           Gunicorn / Django          |
+                  |     (Web Dashboard, REST API, Admin) |
+                  +------------------+-------------------+
+                                     | PostgreSQL Queries
+                                     v
+                  +--------------------------------------+
+                  |          PostgreSQL Database         |
+                  |  (Settings, Devices, Revisions, Diff)|
+                  +------------------+-------------------+
+                                     ^ PostgreSQL Queries
+                                     |
+                  +------------------+-------------------+
+                  |        Oxidized Backup Daemon        |
+                  |    (Multi-threaded Worker Pool)      |
+                  +--------------------------------------+
 ```
 
-#### Via Standalone CLI Executable:
+---
+
+### Step 1: Prepare Environment and Static Files
+
+In your application root (`/opt/oxidized` or `/app`):
+
 ```bash
-# Daemon mode:
-./bin/oxidized
+# Activate virtual environment
+source /opt/oxidized/venv/bin/activate
 
-# Single pass with debug logging:
-./bin/oxidized -1 -d
+# Apply migrations
+python3 manage.py migrate
 
-# Ad-hoc node execution without prior database record:
-./bin/oxidized --node edge-router-01 --host 10.0.0.1 -m ios -u admin -p secret -1
+# Collect static assets into staticfiles directory
+python3 manage.py collectstatic --noinput
+```
+
+---
+
+### Step 2: Configure Systemd Services
+
+Create a dedicated system user (e.g., `oxidized`):
+```bash
+sudo useradd -r -s /bin/false -d /opt/oxidized oxidized
+sudo chown -R oxidized:oxidized /opt/oxidized
+```
+
+#### 1. Oxidized Daemon Service: `/etc/systemd/system/oxidized.service`
+
+```ini
+[Unit]
+Description=Oxidized Network Device Backup Daemon
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=oxidized
+Group=oxidized
+WorkingDirectory=/opt/oxidized
+Environment="DJANGO_SETTINGS_MODULE=oxidized_project.settings"
+Environment="POSTGRES_DB=oxidized"
+Environment="POSTGRES_USER=oxidized"
+Environment="POSTGRES_PASSWORD=oxidized"
+Environment="POSTGRES_HOST=127.0.0.1"
+Environment="POSTGRES_PORT=5432"
+ExecStart=/opt/oxidized/venv/bin/python3 manage.py run_oxidized
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+RestartSec=10
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target
+```
+
+#### 2. Oxidized Web Application Service: `/etc/systemd/system/oxidized-web.service`
+
+```ini
+[Unit]
+Description=Oxidized Django Web Dashboard & REST API
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=oxidized
+Group=oxidized
+WorkingDirectory=/opt/oxidized
+Environment="DJANGO_SETTINGS_MODULE=oxidized_project.settings"
+Environment="POSTGRES_DB=oxidized"
+Environment="POSTGRES_USER=oxidized"
+Environment="POSTGRES_PASSWORD=oxidized"
+Environment="POSTGRES_HOST=127.0.0.1"
+Environment="POSTGRES_PORT=5432"
+ExecStart=/opt/oxidized/venv/bin/gunicorn oxidized_project.wsgi:application \
+          --workers 4 \
+          --bind 127.0.0.1:8000 \
+          --timeout 120 \
+          --access-logfile /var/log/oxidized/web_access.log \
+          --error-logfile /var/log/oxidized/web_error.log
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Enable and start both services:
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now oxidized.service
+sudo systemctl enable --now oxidized-web.service
+```
+
+---
+
+### Step 3: Configure Nginx Reverse Proxy
+
+Create `/etc/nginx/sites-available/oxidized.conf`:
+
+```nginx
+server {
+    listen 80;
+    server_name oxidized.example.com;
+
+    client_max_body_size 64M;
+
+    # Static assets
+    location /static/ {
+        alias /opt/oxidized/staticfiles/;
+        expires 30d;
+        add_header Cache-Control "public, no-transform";
+    }
+
+    # Proxy to Gunicorn
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 180s;
+        proxy_connect_timeout 60s;
+    }
+}
+```
+
+Enable the site and reload Nginx:
+```bash
+sudo ln -s /etc/nginx/sites-available/oxidized.conf /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+---
+
+## Daemon Control & Reloading from the Web Interface
+
+Oxidized provides web controls to reload node inventory or restart the background daemon without requiring SSH access to the server.
+
+### 1. Operations > Daemon Control (`/daemon`)
+- **Status Dashboard**: Displays the current status (`Running` / `Offline`), process ID (`PID`), active PID file location, worker threads, and managed device count.
+- **Reload Configuration & Nodes Button**: Sends a `SIGHUP` signal to the background daemon. The daemon instantly refreshes global settings, custom OS models, and node inventory from PostgreSQL without interrupting running backup tasks or dropping connection pools.
+- **Restart Daemon Process Button**: Sends a `SIGTERM` signal to gracefully shut down the daemon. Because the service is configured with `Restart=always` under systemd, systemd immediately restarts the daemon with fresh memory and configuration.
+
+### 2. Operations > Reload Inventory (`/reload` and `/reload.json`)
+- Calling `/reload` triggers a reload of all nodes and custom models from PostgreSQL and signals the background daemon.
+- Also available programmatically via REST API:
+  ```bash
+  curl -X POST -u admin:password http://oxidized.example.com/reload.json
+  ```
+
+### 3. Command-Line Signals
+If you have terminal access, you can also signal or restart the daemon directly:
+```bash
+# Reload inventory without restarting:
+kill -HUP $(cat ~/.config/oxidized/pid)
+
+# Restart daemon:
+sudo systemctl restart oxidized
 ```
 
 ---

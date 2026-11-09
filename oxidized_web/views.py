@@ -212,6 +212,25 @@ def node_next(request, node_name=None, group=None, node=None):
         success = n.run()
     return JsonResponse({'node': node_name, 'queued': bool(success)})
 
+def _get_daemon_pid():
+    """Retrieve daemon PID from configured PID file if running."""
+    import os
+    from oxidized.config import Config
+    from oxidized_web.models import OxidizedSetting
+    setting = OxidizedSetting.objects.first()
+    raw_pid_path = getattr(setting, 'pid', None) or os.path.join(Config.ROOT, 'pid')
+    pid_file = os.path.expanduser(str(raw_pid_path))
+    if os.path.exists(pid_file):
+        try:
+            with open(pid_file, 'r', encoding='utf-8') as f:
+                pid = int(f.read().strip())
+            # Check if process is still alive
+            os.kill(pid, 0)
+            return pid, pid_file
+        except Exception:
+            return None, pid_file
+    return None, pid_file
+
 @csrf_exempt
 @login_required(login_url='/admin/login/')
 def reload_nodes(request):
@@ -219,9 +238,145 @@ def reload_nodes(request):
     if not can_user_edit_config(request.user):
         return HttpResponseForbidden("Permission denied: special permission required to alter configuration state.")
 
+    import os, signal
     nodes = get_nodes(force_reload=True)
     nodes.load()
-    return JsonResponse({'status': 'ok', 'reloaded': True, 'count': len(nodes)})
+
+    signaled_daemon = False
+    core = Core.current()
+    if core:
+        core.reload()
+        signaled_daemon = True
+    else:
+        pid, pid_file = _get_daemon_pid()
+        if pid:
+            try:
+                os.kill(pid, signal.SIGHUP)
+                signaled_daemon = True
+            except Exception:
+                signaled_daemon = False
+
+    msg = f"Reloaded {len(nodes)} nodes from PostgreSQL. " + (
+        "Daemon signaled via SIGHUP." if signaled_daemon else "Note: Background daemon was not detected."
+    )
+    if (
+        request.path.endswith('.json')
+        or request.GET.get('format') == 'json'
+        or request.headers.get('x-requested-with') == 'XMLHttpRequest'
+        or request.headers.get('accept') == 'application/json'
+        or 'format=json' in request.META.get('QUERY_STRING', '')
+        or not request.META.get('HTTP_REFERER')
+    ):
+        return JsonResponse({'status': 'ok', 'reloaded': True, 'count': len(nodes), 'signaled_daemon': signaled_daemon})
+
+    from django.contrib import messages
+    messages.success(request, msg)
+    return redirect('daemon_control')
+
+@login_required(login_url='/admin/login/')
+def daemon_control_view(request):
+    """View daemon process status, PID, and trigger config reloads or restarts."""
+    if not can_user_view_node(request.user):
+        return HttpResponseForbidden("Permission denied: You do not have permission to view daemon controls.")
+
+    from oxidized_web.models import OxidizedSetting, Device
+    setting = OxidizedSetting.objects.first()
+    pid, pid_file = _get_daemon_pid()
+    core = Core.current()
+    running = bool(pid is not None or (core and getattr(core, '_running', False)))
+
+    node_count = Device.objects.filter(enabled=True).count()
+    daemon_info = {
+        'running': running,
+        'pid': pid or (os.getpid() if (core and getattr(core, '_running', False)) else None),
+        'pid_file': pid_file,
+        'threads': setting.threads if setting else 30,
+        'interval': setting.interval if setting else 3600,
+        'node_count': node_count,
+    }
+    return render(request, 'oxidized_web/daemon_control.html', {'daemon_info': daemon_info})
+
+@login_required(login_url='/admin/login/')
+def daemon_status_api(request):
+    """API endpoint returning running daemon status and PID in JSON."""
+    pid, pid_file = _get_daemon_pid()
+    core = Core.current()
+    running = bool(pid is not None or (core and getattr(core, '_running', False)))
+    return JsonResponse({
+        'running': running,
+        'pid': pid,
+        'pid_file': pid_file,
+    })
+
+@csrf_exempt
+@login_required(login_url='/admin/login/')
+def daemon_reload_view(request):
+    """Signal the background daemon to reload configuration and node inventory without restarting."""
+    if not can_user_edit_config(request.user):
+        return HttpResponseForbidden("Permission denied: special permission required to reload daemon configuration.")
+
+    import os, signal
+    from django.contrib import messages
+    nodes = get_nodes(force_reload=True)
+    nodes.load()
+
+    signaled = False
+    core = Core.current()
+    if core:
+        core.reload()
+        signaled = True
+    else:
+        pid, pid_file = _get_daemon_pid()
+        if pid:
+            try:
+                os.kill(pid, signal.SIGHUP)
+                signaled = True
+            except Exception as e:
+                messages.error(request, f"Failed to signal daemon PID {pid}: {e}")
+                return redirect('daemon_control')
+
+    if signaled:
+        messages.success(request, f"Successfully signaled daemon to reload config and {len(nodes)} nodes from PostgreSQL (SIGHUP).")
+    else:
+        messages.warning(request, f"Inventory refreshed locally ({len(nodes)} nodes), but no running background daemon was found.")
+
+    if request.path.endswith('.json') or request.GET.get('format') == 'json':
+        return JsonResponse({'status': 'ok', 'reloaded': True, 'signaled': signaled})
+    return redirect('daemon_control')
+
+@csrf_exempt
+@login_required(login_url='/admin/login/')
+def daemon_restart_view(request):
+    """Gracefully terminate running daemon process (SIGTERM) so supervisor/systemd restarts it."""
+    if not can_user_edit_config(request.user):
+        return HttpResponseForbidden("Permission denied: special permission required to restart daemon.")
+
+    import os, signal, time
+    from django.contrib import messages
+
+    core = Core.current()
+    restarted = False
+    if core:
+        core.stop()
+        restarted = True
+    else:
+        pid, pid_file = _get_daemon_pid()
+        if pid:
+            try:
+                os.kill(pid, signal.SIGTERM)
+                restarted = True
+            except Exception as e:
+                messages.error(request, f"Failed to stop daemon PID {pid}: {e}")
+                return redirect('daemon_control')
+
+    if restarted:
+        messages.success(request, "Termination signal (SIGTERM) sent to daemon. If running under systemd or supervisor, the service will restart automatically with fresh configuration.")
+    else:
+        messages.warning(request, "No running daemon process detected to restart.")
+
+    if request.path.endswith('.json') or request.GET.get('format') == 'json':
+        return JsonResponse({'status': 'ok', 'restarted': restarted})
+    return redirect('daemon_control')
 
 @login_required(login_url='/admin/login/')
 def conf_search(request):

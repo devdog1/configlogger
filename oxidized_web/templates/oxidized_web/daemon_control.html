@@ -1,0 +1,127 @@
+{% extends "oxidized_web/base.html" %}
+
+{% block content %}
+<div class="ox-content-header d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h2 class="h4 mb-1"><i class="bi bi-hdd-rack me-2 text-primary"></i>Daemon Control & Process Management</h2>
+    <p class="text-muted small mb-0">Monitor background Oxidized backup daemon status, reload node configuration, or restart the daemon service.</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'daemon_control' %}" class="btn btn-sm btn-outline-secondary">
+      <i class="bi bi-arrow-clockwise me-1"></i>Refresh Status
+    </a>
+  </div>
+</div>
+
+{% if messages %}
+<div class="mb-4">
+  {% for message in messages %}
+    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="row g-4">
+  <!-- Daemon Status Card -->
+  <div class="col-md-6 col-lg-5">
+    <div class="ox-card h-100">
+      <div class="ox-card-header d-flex justify-content-between align-items-center">
+        <span class="ox-card-title"><i class="bi bi-activity me-2"></i>Daemon Status</span>
+        {% if daemon_info.running %}
+          <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Running</span>
+        {% else %}
+          <span class="badge bg-secondary"><i class="bi bi-pause-circle me-1"></i>Not Detected / Offline</span>
+        {% endif %}
+      </div>
+      <div class="ox-card-body">
+        <ul class="list-group list-group-flush mb-3">
+          <li class="list-group-item d-flex justify-content-between px-0">
+            <span class="text-muted">Process ID (PID)</span>
+            <span class="font-monospace fw-bold">{{ daemon_info.pid|default:"N/A" }}</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between px-0">
+            <span class="text-muted">PID File Location</span>
+            <span class="font-monospace small text-truncate" style="max-width: 250px;">{{ daemon_info.pid_file }}</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between px-0">
+            <span class="text-muted">Active Workers</span>
+            <span>{{ daemon_info.threads|default:"30" }} threads</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between px-0">
+            <span class="text-muted">Managed Nodes</span>
+            <span>{{ daemon_info.node_count }} nodes</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between px-0">
+            <span class="text-muted">Polling Interval</span>
+            <span>{{ daemon_info.interval }} seconds</span>
+          </li>
+        </ul>
+
+        {% if not daemon_info.running %}
+        <div class="alert alert-warning small mb-0">
+          <i class="bi bi-exclamation-triangle me-1"></i>
+          The background backup process is not running. Start the daemon using:
+          <code class="d-block mt-1 bg-dark text-light p-2 rounded">python3 manage.py run_oxidized</code>
+          or via systemd service <code class="text-dark">systemctl start oxidized</code>.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Actions Card -->
+  <div class="col-md-6 col-lg-7">
+    <div class="ox-card h-100">
+      <div class="ox-card-header">
+        <span class="ox-card-title"><i class="bi bi-sliders me-2"></i>Daemon Operations</span>
+      </div>
+      <div class="ox-card-body d-flex flex-column gap-3">
+        <!-- Reload Inventory & Config -->
+        <div class="p-3 border rounded">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div>
+              <h5 class="h6 mb-1 text-primary"><i class="bi bi-arrow-repeat me-1"></i>Reload Configuration & Nodes</h5>
+              <p class="text-muted small mb-0">Sends a <code>SIGHUP</code> signal to the running daemon to reload settings, OS models, and node inventory from PostgreSQL without dropping active connections.</p>
+            </div>
+            <form action="{% url 'daemon_reload' %}" method="post" class="ms-3">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-primary btn-sm text-nowrap">
+                <i class="bi bi-arrow-repeat me-1"></i>Reload Config
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Restart Daemon -->
+        <div class="p-3 border rounded">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div>
+              <h5 class="h6 mb-1 text-danger"><i class="bi bi-power me-1"></i>Restart Daemon Process</h5>
+              <p class="text-muted small mb-0">Sends a <code>SIGTERM</code> signal to gracefully terminate the running daemon process. If running under systemd or supervisor, it will automatically restart with fresh memory and configuration.</p>
+            </div>
+            <form action="{% url 'daemon_restart' %}" method="post" class="ms-3" onsubmit="return confirm('Are you sure you want to restart the backup daemon?');">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline-danger btn-sm text-nowrap">
+                <i class="bi bi-power me-1"></i>Restart Daemon
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- CLI Quick Reference -->
+        <div class="p-3 bg-light border rounded mt-auto">
+          <h6 class="small fw-bold text-muted mb-2"><i class="bi bi-terminal me-1"></i>CLI Quick Commands</h6>
+          <pre class="bg-dark text-light p-2 rounded mb-0 small font-monospace"><code># Signal daemon reload manually:
+kill -HUP $(cat ~/.config/oxidized/pid)
+
+# Restart daemon service:
+sudo systemctl restart oxidized</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

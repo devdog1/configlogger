@@ -20,6 +20,15 @@ urlpatterns = [
     path('reload', views.reload_nodes, name='reload_nodes'),
     path('reload.json', views.reload_nodes, name='reload_nodes_json'),
 
+    # Daemon Management & Process Control
+    path('daemon', views.daemon_control_view, name='daemon_control'),
+    path('daemon/status', views.daemon_status_api, name='daemon_status_api'),
+    path('daemon/status.json', views.daemon_status_api, name='daemon_status_api_json'),
+    path('daemon/reload', views.daemon_reload_view, name='daemon_reload'),
+    path('daemon/reload.json', views.daemon_reload_view, name='daemon_reload_json'),
+    path('daemon/restart', views.daemon_restart_view, name='daemon_restart'),
+    path('daemon/restart.json', views.daemon_restart_view, name='daemon_restart_json'),
+
     path('node/show/<str:node>', views.node_show, name='node_show'),
     path('node/show/<str:node>.json', views.node_show, name='node_show_json'),
     path('node/fetch/<str:node>', views.node_fetch, name='node_fetch'),
