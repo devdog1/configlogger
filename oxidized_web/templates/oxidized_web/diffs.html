@@ -31,11 +31,11 @@
     </div>
     <div class="ox-card-header-actions d-flex align-items-center gap-2">
       <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">
-        <i class="bi bi-dash-circle me-1"></i>Base ({{ oid1|slice:":8"|default:"Base" }})
+        <i class="bi bi-dash-circle me-1"></i>Base ({{ oid1|slice:":8"|default:"Base" }}{% if version1 %} &bull; <span class="time" epoch="{{ version1.time }}">{{ version1.date }}</span>{% endif %})
       </span>
       <i class="bi bi-arrow-right text-muted"></i>
       <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
-        <i class="bi bi-plus-circle me-1"></i>Target ({{ oid2|slice:":8"|default:"Target" }})
+        <i class="bi bi-plus-circle me-1"></i>Target ({{ oid2|slice:":8"|default:"Target" }}{% if version2 %} &bull; <span class="time" epoch="{{ version2.time }}">{{ version2.date }}</span>{% endif %})
       </span>
     </div>
   </div>
@@ -50,6 +50,9 @@
               <i class="bi bi-dash-square text-danger me-1"></i>
               <span class="fw-bold">Base Revision:</span>
               <code class="text-secondary">{{ oid1|default:"Base" }}</code>
+              {% if version1 %}
+                <span class="text-muted ms-2 small">(<span class="time" epoch="{{ version1.time }}">{{ version1.date }}</span>)</span>
+              {% endif %}
             </div>
             <span class="badge bg-secondary">{{ total_lines1 }} lines</span>
           </div>
@@ -75,6 +78,9 @@
               <i class="bi bi-plus-square text-success me-1"></i>
               <span class="fw-bold">Target Revision:</span>
               <code class="text-secondary">{{ oid2|default:"Target" }}</code>
+              {% if version2 %}
+                <span class="text-muted ms-2 small">(<span class="time" epoch="{{ version2.time }}">{{ version2.date }}</span>)</span>
+              {% endif %}
             </div>
             <span class="badge bg-secondary">{{ total_lines2 }} lines</span>
           </div>

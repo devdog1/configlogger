@@ -480,6 +480,8 @@ def node_version_diffs(request):
     diff = ""
     content1 = ""
     content2 = ""
+    version1 = None
+    version2 = None
     if n:
         if not can_user_access_group(request.user, n.group):
             return HttpResponseForbidden("You do not have permission to view diffs for this node group.")
@@ -492,6 +494,17 @@ def node_version_diffs(request):
             content2 = n.output.get_version(n.name, group=n.group, oid=oid2) or ""
         except Exception:
             content2 = ""
+
+        # Retrieve metadata for oid1 and oid2 to show date/time
+        try:
+            all_versions = n.output.version(n.name, group=n.group) or []
+            for v in all_versions:
+                if oid1 and (v.get('oid') == oid1 or v.get('oid', '').startswith(oid1)):
+                    version1 = v
+                if oid2 and (v.get('oid') == oid2 or v.get('oid', '').startswith(oid2)):
+                    version2 = v
+        except Exception as e:
+            logger.debug("Error looking up version metadata for diff: %s", e)
 
     if request.path.endswith('.json') or request.GET.get('format') == 'json':
         return JsonResponse({
@@ -575,6 +588,8 @@ def node_version_diffs(request):
         'node_name': node_name,
         'oid1': oid1,
         'oid2': oid2,
+        'version1': version1,
+        'version2': version2,
         'diff': diff,
         'split_rows': split_rows,
         'total_lines1': len(lines1),
