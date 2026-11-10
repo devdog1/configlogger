@@ -1,5 +1,8 @@
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, re_path
+from django.views.static import serve
 from oxidized_web import views
 
 urlpatterns = [
@@ -58,4 +61,7 @@ urlpatterns = [
     path('models/add', views.model_create_view, name='model_create_view'),
     path('models/<int:pk>/edit', views.model_edit_view, name='model_edit_view'),
     path('models/<int:pk>/delete', views.model_delete_view, name='model_delete_view'),
+
+    # Fallback static handler ensuring static files are served across all environments
+    re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.BASE_DIR / 'oxidized_web' / 'static'}),
 ]
